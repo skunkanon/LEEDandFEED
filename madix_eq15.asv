@@ -1,0 +1,236 @@
+%% EQ 15 and 16 IMPLEMENTATION  - VARY BETA ONLY, BUILDING OFF CURVE 'a' IN FIGURE 5
+%Somehow doesn't work just running all of them after each other; not all
+%the plots show up. Run each section independently in order. 
+
+
+%Generate Desorption Spectra 
+
+fig5_beta = linspace(0.2, 35,18); 
+
+e16_x_5 = cell(1, length(fig5_beta)); 
+e16_y_5 = cell(1, length(fig5_beta)); 
+e16_t_5 = cell(1,length(fig5_beta));
+tempindex = zeros(1, length(fig5_beta));
+e16_Tp_5 = zeros(1, length(fig5_beta));
+int_list = zeros(1,length(fig5_beta));
+
+fprintf("\n");
+
+
+
+fprintf("FIGURE 5");
+for i = 1:length(fig5_beta)
+    [e16_t_5{i},e16_x_5{i}, e16_y_5{i}] = madix_sim_eq16(fig5_beta(i));
+    [~, tempindex(i)] = max(e16_y_5{i});
+    e16_Tp_5(i) = e16_x_5{i}(tempindex(i));
+    fprintf("Peak Temp for B = %.4f\n",fig5_beta(i));
+    fprintf("   %.2f C\n\n",e16_Tp_5(i)-273);
+end
+
+
+
+
+
+%{
+scale1 = 1.5;
+
+plot(e16_x_5{1},scale1*e16_y_5{1},'DisplayName', sprintf('Beta = %.3f', fig5_beta(1))); %SCALE LOWER BETA TO BE VISIBLE ON THE PLOT, "'Scale Factor =%.3f',scale1," SCREWS UP THE PLOT 
+
+plot(e16_x_5{1},1*e16_y_5{1},'DisplayName', sprintf('Beta = %.3f', fig5_beta(2)));
+
+plot(e16_x_5{3},e16_y_5{3},'DisplayName', sprintf('Beta = %.3f', fig5_beta(3)));
+
+plot(e16_x_5{4},e16_y_5{4},'DisplayName', sprintf('Beta = %.3f', fig5_beta(4)));
+
+hold off;
+%}
+
+%% Show Desorption Plots 
+
+figure;
+hold on;
+
+for i = 1:length(fig5_beta)
+    plot(e16_x_5{i}, e16_y_5{i}, 'DisplayName', sprintf('Beta = %.3f', fig5_beta(i)));  %checks if integral of the desorption rate equals the initial coverage, it should 
+  
+end
+
+hold off;
+
+
+
+xlabel('Temperature (K)');
+ylabel('Rate = -dN/dt');
+title('Desorption Rate vs. Temperature for Different Beta Values, N = 0.005');
+legend ('show','Location','west');
+grid on;
+
+
+
+%% Equation 16; 1/Tp vs ln(Np) 
+
+
+
+
+%Checks if the coverage lost adds up, should come out ot whatever the
+%initial coverage is set as in 'madix_sim_e16'. 
+for i = 1:length(fig5_beta)
+   
+    int_list(i) = trapz(e16_t_5{i},e16_y_5{i});
+    %fprintf('%.4f\n', int_list(i));
+end
+
+
+
+Np = zeros(1,length(fig5_beta));
+for i = 1:length(fig5_beta)
+    [Np(i),~]=max(e16_y_5{i});          %gets the peak amplitude 
+
+end
+
+y_e16 = log(Np);
+x_e16 = 1./e16_Tp_5;
+
+scatter(x_e16,y_e16);
+
+e16_p = polyfit(x_e16,y_e16,1);
+e16_m = e16_p(1);
+e16_b = e16_p(2);
+
+y_e16_fit = polyval(e16_p,x_e16);
+
+
+
+figure;
+hold on;
+plot(x_e16,y_e16,'bo', 'DisplayName', 'Data');
+
+plot(x_e16,y_e16_fit,'r-', 'DisplayName', sprintf('Fitted Line: y = %.2fx + %.2f', e16_m, e16_b));
+
+hold off;
+
+
+xlabel('1/Tp');
+ylabel('ln(Np)');
+title('Equation 16');
+legend show;
+grid on;
+
+kcal_to_j = 4184;
+R = 8.314;
+
+fprintf('Equation 16, Ea = %.2f',(-e16_m*R)/kcal_to_j);
+fprintf(' kcal/mol \n');
+
+
+%% 
+%Calculating pre-exponential from intercept, equation 16. 
+%Formula is intercept = ln(v * g(Cp). 
+first16 = exp(e16_b);
+second16 = 
+
+
+
+
+
+%% Equation 15, ln(beta/Tp^2) vs 1/Tp
+
+%now calculating frequency factor; first need coverage at peak 
+
+time_to_peak = zeros(1,length(fig5_beta));
+
+for i = 1:length(fig5_beta)
+    time_to_peak(i) = e16_t_5{1,i}(tempindex(i));
+end
+
+
+
+N_to_peak = zeros(1,length(fig5_beta));
+
+for i = 1:length(fig5_beta)
+    lol = linspace(0,time_to_peak(i),10000); %totally unoptimized code that returns the integral of the desorption peak up until the peak 
+    lmao = trapz(lol,e16_y_5{i});
+    N_to_peak(i) = lmao; %Stores the coverage lost until the peak 
+    %fprintf('%.4f\n',lmao);
+end
+
+
+%3/8 - Int_list checks out just fine - all returning the same as the
+%initial coverage of 0.005. Yet to check if it works for different
+%coverages but not much of a reason to think they don't. 
+
+
+%Calculates Cp from N_to_peak 
+Cp = zeros(1,length(fig5_beta));
+for i = 1:length(Cp)
+    Cp(i) = int_list(1) - N_to_peak(i); %All values of int_list should be the same, so just subtract any index of it by N_to_peak
+end
+fprintf('Average peak coverage = %.4f\n',mean(Cp));
+fprintf('Deviation in peak coverage = %.4f\n',std(Cp));
+fprintf('Deviation in peak coverage over actual coverage = %.4f\n', std(Cp)/int_list(1));
+
+
+
+
+%%  Make 1/Tp vs log(B/Tp^2) plot 
+
+
+kcal_to_j = 4184;
+R = 8.314;
+Ea_0 = 32 * kcal_to_j;
+
+
+tempx = zeros(1, length(fig5_beta));
+tempy = zeros(1, length(fig5_beta));
+
+
+for i = 1:length(fig5_beta)
+    %fprintf("%d\n",log(fig5_beta(i)/e16_Tp_5(i)^2));
+    tempx(i) = 1/e16_Tp_5(i);
+    tempy(i) = log(fig5_beta(i)/e16_Tp_5(i)^2); 
+    
+end
+
+%}
+p = polyfit(tempx, tempy, 1);
+
+% Extract the slope (m) and intercept (b) of the line
+m = p(1); % Slope
+b = p(2); % Intercept
+
+% Generate fitted y-values
+fitted_y = polyval(p, tempx);
+
+% Plot the original data and the fitted line
+figure;
+ % Original data
+
+hold on;
+plot(tempx, tempy, 'bo', 'DisplayName', 'Data');
+plot(tempx, fitted_y, 'r-', 'DisplayName', sprintf('Fitted Line: y = %.2fx + %.2f', m, b)); % Fitted line
+hold off;
+
+Ea_calc = (-m*R)/kcal_to_j;
+
+fprintf('Equation 15, Ea = %.2f',Ea_calc);
+fprintf(' kcal/mol \n');
+% Add labels and legend
+xlabel('1/Tp');
+ylabel('ln(Beta/Tp^2)');
+title('Equation 15');
+legend show;
+grid on;
+%%
+%Calculating pre-exponential from intercept, equation 15. 
+%Formula is intercept = ln[R*v/Ea * ( 1 + f - 2Cp/Co)], 
+% for v = the pre-exponential. 
+f = 0.9;
+
+first = exp(b);
+second = first / (1 + f - 2*(mean(Cp)+std(Cp))/int_list(1));
+third = second * Ea_calc / R;
+
+
+
+
+
