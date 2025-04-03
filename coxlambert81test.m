@@ -100,7 +100,7 @@ fprintf('NEW INSTANCE \n');
 
 figure;
 hold on;  % Enable overlaying plots
-colors = lines(numel(data_cell));  % Assign distinct colors
+colors = parula(numel(data_cell));  % Assign distinct colors
 
 for i = 1:numel(data_cell)
     x = data_cell{i}(:, 1);  % First column (x-values)
@@ -118,6 +118,21 @@ legend('show');  % Show legend with dataset labels
 
 
 %% 4/2 - Deriving activation energy, pre-exponential 
-
+fprintf('\n NEW INSTANCE \n');
 %Getting peak temp
+
+[Tp, Tp_index] = deal(zeros(1,numel(data_cell)));
+
+%Getting peak temps 
+for i = 1:numel(data_cell) 
+    x = data_cell{i}(:, 1);  % First column (x-values)
+    y = data_cell{i}(:, 2);  % Second column (y-values)
+    [~, Tp_index(i)] = max(y);
+    Tp(i) = x(Tp_index(i));
+end
+
+
+
+
  
+%% 4-3 - Deriving coverage from LEED 
