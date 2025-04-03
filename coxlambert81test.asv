@@ -49,20 +49,27 @@ hold off;
 %Also, don't know how temperature at exposure is going to be taken into
 %account in the math. 
 
+
 %% 3/28 - Digitizing scanned plots. Works. Below is Fig 5 for 300 K. 
 
 figure;
 hold on;
 
 plot(fig5_4(:, 1), fig5_4(:, 2));
+
+
+
+
 plot(fig5_8(:, 1), fig5_8(:, 2));
+
 plot(fig5_2p8(:, 1), fig5_2p8(:, 2));
+%{
 plot(fig5_2p0(:, 1), fig5_2p0(:, 2));
 plot(fig5_1p6(:, 1), fig5_1p6(:, 2));
 plot(fig5_1p2(:, 1), fig5_1p2(:, 2));
 plot(fig5_0p8(:, 1), fig5_0p8(:, 2));
 plot(fig5_0p4(:, 1), fig5_0p4(:, 2));
-
+%}
 
 hold off;
 
@@ -105,9 +112,11 @@ hold off;
 grid on;
 xlabel('X-axis');
 ylabel('Y-axis');
-%title('Multiple Datasets');
+title('Multiple Datasets');
 legend('show');  % Show legend with dataset labels
 
 
-%% 
+%% 4/2 - Deriving activation energy, pre-exponential 
+
+%Getting peak temp
  
