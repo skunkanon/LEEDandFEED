@@ -123,6 +123,7 @@ fprintf('\n NEW INSTANCE \n');
 
 [Tp, Tp_index] = deal(zeros(1,numel(data_cell)));
 
+
 %Getting peak temps 
 for i = 1:numel(data_cell) 
     x = data_cell{i}(:, 1);  % First column (x-values)
@@ -131,8 +132,42 @@ for i = 1:numel(data_cell)
     Tp(i) = x(Tp_index(i));
 end
 
+%Calculating plot values
 
+[log1_x, log1_y] = deal(zeros(1,numel(data_cell)));
+beta = 50; %K/s
+for i = 1:numel(data_cell)
+    log1_x(i) = 1/Tp(i);
+    log1_y(i) = log(beta/Tp(i)^2);
+end
+
+%Plotting 
+
+p = polyfit(log1_x, log1_y,1);
+
+m = p(1);
+b = p(2);
+
+fit_log_y = polyval(p,log1_x);
+
+figure;
+hold on;
+plot(log1_x, log1_y, 'bo', 'DisplayName', 'Raw Data');
+plot(log1_x, fit_log_y, 'r', 'DisplayName', sprintf('Fit Line: y = %.2fx + %.2f', m , b));
+xlabel('1/Tp');
+ylabel('ln(Beta/Tp^2');
+legend('show');
+hold off;
+
+
+%Calculate Ea
+
+R = 8.314; % J/molK
+%kcal_to_j = 4184;
+CoxL_Ea = (-m*R); %okay this sucks it's way too low and NEGATIVE what 
 
 
  
 %% 4-3 - Deriving coverage from LEED 
+
+%
