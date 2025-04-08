@@ -44,13 +44,13 @@ scaleFactor = (1/3)/(0.589311184524498);
 coverageActual = [x_interp .* 10^19, y_interp .* scaleFactor];
 
 scaleFactor_TDS = (1/3)/(0.445454545454545);
-
+%scatter(TDS_raw(:,1), TDS_raw(:,2));
 figure; 
 hold on; 
 TDS_x = TDS_raw(:,1) * 10^19;
 TDS_y = TDS_raw(:,2) * scaleFactor_TDS;
 
-plot(TDS_x, TDS_y, 'bo');
+plot(TDS_x, TDS_y, 'b-');
 
  
 plot(coverageActual(:,1), coverageActual(:,2));
