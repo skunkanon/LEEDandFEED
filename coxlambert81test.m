@@ -369,155 +369,65 @@ x3_BG = 1 ./(x_1p2_BG');
 y3_BG = log( 50 .* f_1p2_BG ./ S_1p2_BG);
  
 %}
+x2_BG = x2_BG(1:29);
+y2_BG = y2_BG(1:29);
+
+p_0p8 = polyfit(x2_BG, y2_BG,1);
+m_0p8 = p_0p8(1);
+b_0p8 = p_0p8(2);
+y2_BG_fit = polyval(p_0p8,x2_BG);
+
+
 figure;
 hold on;
 %scatter(x3_BG, y3_BG,'DisplayName',sprintf('1.2 x 10^{19} Dose / 0.28 Coverage'));
 scatter(x2_BG, y2_BG,'DisplayName',sprintf('0.8 x 10^{19} Dose / 0.19 Coverage')); %huh?????
 %scatter(x1_BG, y1_BG,'DisplayName',sprintf('0.4 x 10^{19} Dose / 0.095 Coverage'));
-
-
+plot(x2_BG, y2_BG_fit, 'DisplayName', sprintf('Regression: y = %.4fx + %.4f',m_0p8,b_0p8));
 
 set(gca, 'YDir','reverse');
 title('Analysis')
 legend('show')
 hold off;
-%% Mean-center x values before regression (optional but makes intercept more meaningful)
-x_mean = mean(x_clean);
-x_centered = x_clean - x_mean;
-
-% Build design matrix with centered x
-X = [ones(length(x_clean), 1), x_centered];
-
-% Regress with centered data
-[b, b_int, ~, ~, stats] = regress(y_clean, X);
-
-% Compute fitted line over centered x
-x_fit_centered = linspace(min(x_centered), max(x_centered), 100);
-y_fit = b(1) + b(2) * x_fit_centered;
-
-% Un-center x for plotting
-x_fit = x_fit_centered + x_mean;
-
-% Plot
-figure;
-hold on;
-scatter(x2_BG, y2_BG, 'DisplayName', '0.8 x 10^{19} Dose / 0.19 Coverage', 'MarkerEdgeColor',[0.8500, 0.3250, 0.0980]);
-plot(x_fit, y_fit, '--', 'DisplayName', ' Linear Fit (0.8 x 10^{19} Dose)', 'Color', [0.2 0.2 0.2]);
-set(gca, 'YDir','reverse');
-title('Analysis');
-legend('show');
-hold off;
-
-% Console output
-fprintf('Linear fit: y = %.4f * (x - %.4e) \n', b(2), x_mean);
-fprintf('R² = %.4f\n', stats(1));
-fprintf('95%% CI for slope: [%.4f, %.4f]\n', b_int(2,1), b_int(2,2));
-% Transform intercept and CI to original coordinates
-true_intercept = b(1) - b(2) * x_mean;
-true_intercept_CI = b_int(1,:) - b(2) * x_mean;
-
-%fprintf('True intercept (at x = 0): %.4e\n', true_intercept);
-fprintf('95%% CI for intercept: [%.4e, %.4e]\n', true_intercept_CI(1)-true_intercept, true_intercept_CI(2)-true_intercept);
-
 %%
-%% Mean-center x values before regression (optional but makes intercept more meaningful)
-x_mean = mean(x_clean);
-x_centered = x_clean - x_mean;
 
-% Build design matrix with centered x
-X = [ones(length(x_clean), 1), x_centered];
+x2_BG = x2_BG(1:29);
+y2_BG = y2_BG(1:29);
 
-% Regress with centered data
-[b, b_int, ~, ~, stats] = regress(y_clean, X);
+% Linear regression with stats
+X = [ones(length(x2_BG), 1), x2_BG];  % Design matrix
+[b, b_int, ~, ~, stats] = regress(y2_BG, X);  % b = [intercept; slope]
 
-% Compute fitted line over centered x
-x_fit_centered = linspace(min(x_centered), max(x_centered), 100);
-y_fit = b(1) + b(2) * x_fit_centered;
+% Extract results
+m_0p8 = b(2);
+b_0p8 = b(1);
+R2 = stats(1);
+slope_CI = b_int(2, :);
+intercept_CI = b_int(1, :);
 
-% Un-center x for plotting
-x_fit = x_fit_centered + x_mean;
+% Predicted fit
+y2_BG_fit = X * b;
 
 % Plot
 figure;
 hold on;
-scatter(x2_BG, y2_BG, 'DisplayName', '0.8 x 10^{19} Dose / 0.19 Coverage', ...
-    'MarkerEdgeColor',[0.8500, 0.3250, 0.0980]);
-plot(x_fit, y_fit, '--', 'DisplayName', 'Linear Fit (0.8 x 10^{19} Dose)', ...
-    'Color', [0.2 0.2 0.2]);
+scatter(x2_BG, y2_BG, 'DisplayName', sprintf('0.8 x 10^{19} Dose / 0.19 Coverage'));
+plot(x2_BG, y2_BG_fit, 'DisplayName', ...
+    sprintf('Regression: y = %.4fx + %.4f', m_0p8, b_0p8));
 set(gca, 'YDir','reverse');
 title('Analysis');
 legend('show');
 hold off;
 
-% Console output
-fprintf('Linear fit: y = %.4f * (x - %.4e)\n', b(2), x_mean);
-fprintf('R² = %.4f\n', stats(1));
-fprintf('95%% CI for slope: [%.4f, %.4f]\n', b_int(2,1), b_int(2,2));
-fprintf('95%% CI for intercept: [%.4f, %.4f]\n', b_int(1,1), b_int(1,2));
-
-% Calculate x-intercept (where y = 0)
-x_intercept = x_mean - (b(1) / b(2));
-fprintf('x-intercept (y = 0): %.4e\n', x_intercept);
-
-%% ACTUAL 
+% Print stats
+fprintf('Slope: %.4f\n', m_0p8);
+fprintf('95%% CI for slope: [%.4f, %.4f]\n', slope_CI(1), slope_CI(2));
+fprintf('Intercept: %.4f\n', b_0p8);
+fprintf('95%% CI for intercept: [%.4f, %.4f]\n', intercept_CI(1), intercept_CI(2));
+fprintf('R² = %.4f\n', R2);
 
 
-fprintf('NEW INSTANCE \n');
 
-f_0p8_BG = y_0p8_BG';
-S_0p8_BG = zeros(1,length(f_0p8_BG));
-
-f_0p4_BG = y_0p4_BG';
-S_0p4_BG = zeros(1,length(f_0p4_BG));
-
-f_1p2_BG = y_1p2_BG';
-S_1p2_BG = zeros(1,length(f_1p2_BG));
-
-for i=1:length(f_0p8_BG)
-    S_0p8_BG(i) = trapz(f_0p8_BG(1:(length(f_0p8_BG) - i)));
-end
-
-for i=1:length(f_0p4_BG)
-    S_0p4_BG(i) = trapz(f_0p4_BG(1:(length(f_0p4_BG) - i)));
-end
-
-for i=1:length(f_1p2_BG)
-    S_1p2(i) = trapz(f_1p2_BG(1:(length(f_1p2_BG) - i)));
-end
-
-
-x2_BG = 1 ./(x_0p8_BG');
-y2_BG = log( 50 .* f_0p8 ./ S_0p8);
-
-x1_BG = 1 ./(x_0p4_BG');
-y1_BG = log( 50 .* f_0p4 ./ S_0p4);
-
-
-x3_BG = 1 ./(x_1p2_BG');
-y3_BG = log( 50 .* f_1p2 ./ S_1p2);
-
-figure;
-hold on;
-%scatter(x3_BG, y3_BG,'DisplayName',sprintf('1.2 x 10^{19} Dose / 0.28 Coverage'));
-scatter(x2_BG, y2_BG,'DisplayName',sprintf('0.8 x 10^{19} Dose / 0.19 Coverage')); %huh?????
-%scatter(x1_BG, y1_BG,'DisplayName',sprintf('0.4 x 10^{19} Dose / 0.095 Coverage'));
-%{
-% Fit a linear model
-p = polyfit(x2_BG, y2_BG, 1); % p(1) = slope, p(2) = intercept
-
-% Generate points along the regression line
-x_fit = linspace(min(x2_BG), max(x2_BG), 100);
-y_fit = polyval(p, x_fit);
-
-% Plot the regression line
-plot(x_fit, y_fit, '--', 'DisplayName', 'Linear Fit (0.8 Dose)', 'Color', [0.2 0.2 0.2]);
-
-% Optionally display equation in command window
-fprintf('Linear fit: y = %.4f * x + %.4f\n', p(1), p(2));
-%}
-set(gca, 'YDir','reverse');
-legend('show')
-hold off;
 %% Making cell array from digitized points 
 
 
@@ -586,6 +496,7 @@ for i = 1:numel(data_cell)
 end
 
 %Plotting 
+
 
 p = polyfit(log1_x, log1_y,1);
 

@@ -324,8 +324,8 @@ hold off;
 
 
 fprintf('NEW INSTANCE \n');
-x_1p2_BG = x_1p2_BG(11:21);
-y_1p2_BG = y_1p2_BG(11:21);
+x_0p8_BG = x_0p8_BG(51:81);
+y_0p8_BG = y_0p8_BG(51:81);
 
 %% MADE THE PLOT WITH 1.2 LOWER THAN THE REST OF THEM SOMEHOW WHAT 
 
@@ -341,7 +341,7 @@ end
 
 x2_BG = 1 ./(x_0p8_BG');
 y2_BG = log( 50 .* f_0p8_BG ./ S_0p8_BG);
-
+%{
 % 0.4
 f_0p4_BG = y_0p4_BG';
 S_0p4_BG = zeros(1,length(f_0p4_BG));
@@ -368,61 +368,27 @@ end
 x3_BG = 1 ./(x_1p2_BG');
 y3_BG = log( 50 .* f_1p2_BG ./ S_1p2_BG);
  
+%}
+p_0p8 = polyfit(x2_BG, y2_BG,1);
+m_0p8 = p_0p8(1);
+b_0p8 = p_0p8(2);
+y2_BG_fit = polyval(p_0p8,x2_BG);
+
 
 figure;
 hold on;
-scatter(x3_BG, y3_BG,'DisplayName',sprintf('1.2 x 10^{19} Dose / 0.28 Coverage'));
+%scatter(x3_BG, y3_BG,'DisplayName',sprintf('1.2 x 10^{19} Dose / 0.28 Coverage'));
 scatter(x2_BG, y2_BG,'DisplayName',sprintf('0.8 x 10^{19} Dose / 0.19 Coverage')); %huh?????
-scatter(x1_BG, y1_BG,'DisplayName',sprintf('0.4 x 10^{19} Dose / 0.095 Coverage'));
+%scatter(x1_BG, y1_BG,'DisplayName',sprintf('0.4 x 10^{19} Dose / 0.095 Coverage'));
+plot(x2_BG, y2_BG_fit);
+
 set(gca, 'YDir','reverse');
-title('THIRD TEMPERATURE RANGE CHANGE')
+title('Analysis')
 legend('show')
 hold off;
-%% ACTUAL 
 
 
-fprintf('NEW INSTANCE \n');
 
-f_0p8_BG = y_0p8_BG';
-S_0p8_BG = zeros(1,length(f_0p8_BG));
-
-f_0p4_BG = y_0p4_BG';
-S_0p4_BG = zeros(1,length(f_0p4_BG));
-
-f_1p2_BG = y_1p2_BG';
-S_1p2_BG = zeros(1,length(f_1p2_BG));
-
-for i=1:length(f_0p8_BG)
-    S_0p8_BG(i) = trapz(f_0p8_BG(1:(length(f_0p8_BG) - i)));
-end
-
-for i=1:length(f_0p4_BG)
-    S_0p4_BG(i) = trapz(f_0p4_BG(1:(length(f_0p4_BG) - i)));
-end
-
-for i=1:length(f_1p2_BG)
-    S_1p2(i) = trapz(f_1p2_BG(1:(length(f_1p2_BG) - i)));
-end
-
-
-x2_BG = 1 ./(x_0p8_BG');
-y2_BG = log( 50 .* f_0p8 ./ S_0p8);
-
-x1_BG = 1 ./(x_0p4_BG');
-y1_BG = log( 50 .* f_0p4 ./ S_0p4);
-
-
-x3_BG = 1 ./(x_1p2_BG');
-y3_BG = log( 50 .* f_1p2 ./ S_1p2);
-
-figure;
-hold on;
-scatter(x3_BG, y3_BG,'DisplayName',sprintf('1.2 x 10^{19} Dose / 0.28 Coverage'));
-scatter(x2_BG, y2_BG,'DisplayName',sprintf('0.8 x 10^{19} Dose / 0.19 Coverage')); %huh?????
-scatter(x1_BG, y1_BG,'DisplayName',sprintf('0.4 x 10^{19} Dose / 0.095 Coverage'));
-set(gca, 'YDir','reverse');
-legend('show')
-hold off;
 %% Making cell array from digitized points 
 
 
@@ -491,6 +457,8 @@ for i = 1:numel(data_cell)
 end
 
 %Plotting 
+
+
 
 p = polyfit(log1_x, log1_y,1);
 
