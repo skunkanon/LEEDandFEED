@@ -18,7 +18,7 @@ bg = @(x) bg_pre + (x-1000)*((bg_post-bg_pre)/(1340-1000)); %Temps that index 51
 
 bg_span = linspace(1000,1340,85-51+1); %Number of indices from 51 to 85 
 
-x_0p8 = x_0p8_raw(51:85); %restricting temperature range 
+x_0p8 = x_0p8_raw(51:85);
 figure;
 hold on;
 plot(x_0p8_raw, bg_pre * ones(size(x_0p8_raw)), '--k', 'LineWidth', 1.5);  % dashed black line
