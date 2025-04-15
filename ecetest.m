@@ -40,8 +40,8 @@ xlabel('Frequency (cycles/sample)');
 ylabel('Magnitude (dB)');
 title('FIR Low-Pass Filter (Window Method)');
 ylim([-100 5]);
-xline(fp, '--g', 'Passband edge');
-xline(fs, '--r', 'Stopband edge');
+xline(fp,'--', 'Passband edge');
+xline(fs, '--', 'Stopband edge');
 
 %%
 % Calculate passband ripple and stopband attenuation
