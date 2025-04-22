@@ -72,18 +72,18 @@ grid on;
 % 1.4 x 10^19 corresponds to 1/3 coverage. Interpolated gives 0.5893. Need
 %to scale everything down likewise. 
 
-%scaleFactor = (1/3)/(0.589311184524498);
+scaleFactor = (1/3)/(0.589311184524498);
 
 %coverageActual = [x_interp .* 10^19, y_interp .* scaleFactor];
 
 scaleFactor_TDS = (1/3)/(0.445454545454545);
-%scatter(TDS_raw(:,1), TDS_raw(:,2));
+scatter(TDS_raw(:,1), TDS_raw(:,2));
 figure; 
 hold on; 
 TDS_x = x_interp .* 10^19;
-TDS_y = y_interp .* scaleFactor_TDS;
+TDS_y = y_interp .* scaleFactor;
 
-plot(TDS_x, TDS_y, 'b-');
+scatter(TDS_x, TDS_y);
 
 
 % Formatting

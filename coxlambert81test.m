@@ -80,7 +80,7 @@ legend('show');
 %% - 4/8, FUCK the cell array lol 
 
 %doing 0.8 first 
-x_0p8 = fig5_0p8(:,1);
+x_1p2 = fig5_0p8(:,1);
 y_0p8 = fig5_0p8(:,2);
 [min_0p8, ~] = min(y_0p8);
 [M_0p8, ~] = max(y_0p8);
@@ -132,7 +132,7 @@ figure;
 hold on;
 plot(x_1p2, y_1p2, 'DisplayName', sprintf('1.2 x 10^{19} Dose / 0.28 Coverage'), 'LineWidth', 2);
 
-plot(x_0p8, y_0p8, 'DisplayName',sprintf('0.8 x 10^{19} Dose / 0.19 Coverage'), 'LineWidth',2);
+plot(x_1p2, y_0p8, 'DisplayName',sprintf('0.8 x 10^{19} Dose / 0.19 Coverage'), 'LineWidth',2);
 plot(x_0p4, y_0p4, 'DisplayName', sprintf('0.4 x 10^{19} Dose / 0.095 Coverage '), 'LineWidth',2);
 xlabel('Temperature (K)')
 ylabel('Normalized 35 amu Mass Spec Signal Intensity')
@@ -184,7 +184,7 @@ figure;
 hold on;
 scatter(x_1p2, y_1p2, 'DisplayName', sprintf('1.2 x 10^{19} Dose / 0.28 Coverage'));
 
-scatter(x_0p8, y_0p8, 'DisplayName',sprintf('0.8 x 10^{19} Dose / 0.19 Coverage'));
+scatter(x_1p2, y_0p8, 'DisplayName',sprintf('0.8 x 10^{19} Dose / 0.19 Coverage'));
 scatter(x_0p4, y_0p4, 'DisplayName', sprintf('0.4 x 10^{19} Dose / 0.095 Coverage '));
 xlabel('Temperature (K)')
 ylabel('Normalized 35 amu Mass Spec Signal Intensity')
@@ -221,7 +221,7 @@ fprintf('NEW INSTANCE \n');
 x1 = 1 ./(x_0p4');
 y1 = log( 50 .* f_0p4 ./ S_0p4);
 
-x2 = 1 ./(x_0p8');
+x2 = 1 ./(x_1p2');
 y2 = log( 50 .* f_0p8 ./ S_0p8);
 
 x3 = 1 ./(x_1p2');
@@ -523,6 +523,6 @@ CoxL_Ea = (-m*R); %okay this sucks it's way too low and NEGATIVE what
 
 
  
-%% 4-3 - Deriving coverage from LEED 
+%%
 
-%
+
