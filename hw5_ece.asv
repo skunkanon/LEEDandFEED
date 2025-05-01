@@ -239,11 +239,11 @@ Fs = 75 * 1000; %75 ksps = sampling frequency
 
 %%
 N = length(x); %is 512
-
-NFFT = 32768;
+x = x(:);
+NFFT = 64*1024;
 f = linspace(0, Fs, NFFT);
 
-beta = 0;
+beta = 1;
 
 figure;
 hold on;
@@ -252,25 +252,26 @@ win = kaiser(N, beta);
 x_win = x .* win;
 
 fft_x_win = fft(x_win, NFFT);
-fft_x_win_dB = 20 * log10(abs(fft_x_win) + 0.0000000000001);
+fft_x_win_dB = 20 * log10(abs(fft_x_win));
 
 plot(f, fft_x_win_dB);
 
-xlim([8000 13000]);
-ylim([-100 60]);
+%xlim([8000 13000]);
+%ylim([-100 60]);
 
 hold off;
 
 xlabel('Frequency (Hz)');
 ylabel('Magnitude (dB)');
 title('hw4data.txt Kaiser Window, Beta = 0');
-
+%%
+fprintf('NEW INSTANCE #### \n')
 %calculate where gain is maximum, getting frequency
-ind_large = find(f > 9000 & f < 10000);
+ind_large = find(f > 8000 & f < 8200);
 [M_large, I_large] = max(fft_x_win_dB(ind_large));
 f_large = f(ind_large(I_large));
 
-ind_small = find(f > 11000 & f < 12000);
+ind_small = find(f > 8400 & f < 8600);
 [M_small, I_small] = max(fft_x_win_dB(ind_small));
 f_small = f(ind_small(I_small));
 
@@ -285,4 +286,8 @@ fprintf('Beta = 0, Large Component Frequency, Hz = %.4f\n', f_large);
 fprintf('Beta = 0, Large Component Amplitude, V = %.4f\n', A_large);
 fprintf('Beta = 0, Small Component Frequency, Hz = %.4f\n', f_small);
 fprintf('Beta = 0, Small Component Amplitude, V = %.4f\n', A_small);
+
+%%
+
+
 

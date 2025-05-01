@@ -3,10 +3,10 @@
 
 %gui specs 
 Fs = 50000;
-Fpass = 2 * 1000; %centered after mixing, limit is bandwidth 
-Fstop = 4.25 * 1000; %3.33 kHz - 1 kHz 
-Ap = 0.1;     % dB
-As = 72;      % dB
+Fpass = 2; %centered after mixing, limit is bandwidth 
+Fstop = 4.25; %3.33 kHz - 1 kHz 
+Ap = 0.2;     % dB
+As = 62;      % dB
 
 % normalize frequencies
 f = [Fpass Fstop]/(Fs/2);
@@ -18,7 +18,7 @@ dev = [(10^(Ap/20)-1)/(10^(Ap/20)+1), 10^(-As/20)]; %passband ripple, then stopb
 
 %%
 
-w = kaiser(1024,beta);
+w = kaiser(2048,beta);
 wvtool(w);
 
 
