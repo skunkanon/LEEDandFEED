@@ -1,25 +1,25 @@
 
 %%
 N = 8 * 1024;
-M = 150;
-beta = 8; %higher lowers ripple but widens transition band
+M = 200;
+beta = 9; %higher lowers ripple but widens transition band
 
 
 f = (0:N-1) / N;
 f(N/2+1+1:N) = f(N/2+1+1:N)-1;
 
 figure(3); clf; %make filter mask 
-Fp_end = 8000/20000;
-Fp_start = 6000/20000; 
+Fp_end = 8000/50000;
+Fp_start = 4000/50000; 
 Fs_start = 0;
-Fs_end = 5000/20000;
-Fp_dB_start = 10;
-Fp_dB_end = 10;
-Fp_dB_rip = -0.5;
-Fs_dB_att = -70;
+Fs_end = 2000/50000;
+Fp_dB_start = 6;
+Fp_dB_end = 6;
+Fp_dB_rip = -1;
+Fs_dB_att = -80;
 
 
-patch([(9/20) .5 .5 (9/20)] ,[-100 -100 Fs_dB_att Fs_dB_att], 0.9 * [1 1 1]);  %comment out if not bandpass
+patch([(9/50) .5 .5 (9/50)] ,[-100 -100 Fs_dB_att Fs_dB_att], 0.9 * [1 1 1]);  %comment out if not bandpass
 patch([Fs_start Fs_end Fs_end Fs_start] , [-100 -100 Fs_dB_att Fs_dB_att], 0.9 * [1 1 1]);
 patch([Fp_start Fp_end Fp_end Fp_start], ...
     [(Fp_dB_start - Fp_dB_rip) (Fp_dB_end - Fp_dB_rip) (Fp_dB_end + Fp_dB_rip) (Fp_dB_start + Fp_dB_rip)],...
@@ -28,7 +28,8 @@ grid on;
 hold on;
 axis([0 0.5 -90 10]);
 
-Hd = 3.2*(abs(f) > 0.29 & abs(f) < 0.41); %Numbers respectively are close to start and end of passband, %CHANGE SCALAR TO ADJUST HEIGHT OF PASSBAND 
+devi = 0.007; %positive value = grow
+Hd = 2.2*(abs(f) > 0.08 - 0.023 & abs(f) < 0.16 + 0.0048); %Numbers respectively are close to start and end of passband, %CHANGE SCALAR TO ADJUST HEIGHT OF PASSBAND 
 Hd = Hd .* exp(-j*2*pi*f*(M-1)/2);
 
 %if you want to have a sloped passband; comment out Hd statement if not  
@@ -56,189 +57,8 @@ figure(3);
 plot ( f(1:N/2), 20 * log10(abs(H(1:N/2))));
 ylim([-100, 20]);
 
-%% HW4 Q3, A
-
-A = 3.7; %amplitude in V
-f0 = 0.3308; 
-N = 512; %block size
-NFFT = 32768; %FFT points 
-
-n = linspace(0,N-1,N); %time indices 
-x_w = A * cos(2*pi()*f0*n); %sample signal as function of time indices 
- 
-fft_x_w = fft(x_w,NFFT); %dtft calculation from FFT
-ffw_x_w_dB = 20 * log10(abs(fft_x_w) + 0.0000000000001); %magnitude of FFT, small positive value in log10() argument to avoid log10(0)
-
-f = linspace(0,1,NFFT); %frequency from 0 to 1, NFFT indices 
-
-figure;
-hold on;
-plot(f,ffw_x_w_dB,'DisplayName','FFT magnitude'); %plots discrete time frequency 'f' vs magnitude 
-ylim([-20 50]);
-plot([f0 f0], ylim,'--k', 'DisplayName','f_0 = 0.3308'); %shows f0 
-xlabel('DIscrete time frequency f');
-ylabel('Magnitude, dB');
-legend('show');
-
-hold off;
-
-%% Q3, B
-fprintf('NEW INSTANCE \n');
-
-A = 3.7;
-f0 = 0.3308;
-N = 512; 
-NFFT = 32768;
-n = linspace(0,N-1,N);
-x_w = A * cos(2*pi()*f0*n);
-fft_x_w = fft(x_w,NFFT);
-ffw_x_w_dB = 20 * log10(abs(fft_x_w) + 0.0000000000001);
-f = linspace(0,1,NFFT);
-figure;
-hold on;
-plot(f,ffw_x_w_dB,'DisplayName','FFT magnitude');
-ylim([-20 60]);
-xlim([0.30 0.35]);
-plot([f0 f0], ylim,'--r','DisplayName','f0 = 0.3308'); %shows f0 
-%no hold-off here, is instead below to include DFT on single plot 
-
-%end of 3a code
-
-ffw_x_w_DFT = fft(x_w); %512-point DFT calculation
-fft_x_w_DFT_dB = 20 * log10(abs(ffw_x_w_DFT) + 0.000000000000000000001); %compute 32768 point FFT 
-
-
-f_DFT = linspace(0,1,N+1);%aligns 512 DFT points to 32768 point DFT curve
-
-
-plot(f_DFT(1:N),fft_x_w_DFT_dB,'ro','MarkerSize',6,'DisplayName','512-point DFT');
-
-legend('show', 'Location','best');
-
-
-
-
-ylim([-20 60]); %dB only has so much of a range
-xlim([0.30 0.35]);%discrete time frequency range specified in problem 
-
-
-
-
-
-
-hold off;
-
-%% Q3, C
-w = kaiser(N,8); %N = 512, 8 = beta
-
-x_w = x .* w'; %applies kaiser window to x[n]
-
-%compute DTFT
-DTFT_x_w = fft(x_w, NFFT);
-DTFT_x_w_dB = 20 * log10(abs(DTFT_x_w) + 0.000000000000001);
-
-%compute 512-point DFT
-DFT_x_w = fft(x_w);
-DFT_x_w_dB = 20 * log10(abs(DFT_x_w) + 0.000000000000001);
-
-%defining frequency axes
-DTFT_f = linspace(0,1,NFFT);
-DFT_f = linspace(0,(N-1)/N,N);
-
-%calculating cosine peak
-peak = A * (sum(w)/N) *N/2; %amplitude of cos() times average value of window function times N/2 (since positive and negative frequencies split) 
-peak_dB = 20 * log10(peak); %'peak' is nonzero so no correction needed
-
-figure;
-
-hold on;
-
-plot(DTFT_f,DTFT_x_w_dB,'DisplayName','32768-Point FFT'); %DTFT on plot
-plot(DFT_f,DFT_x_w_dB,'ro','MarkerSize',5,'DisplayName','512-Point DFT'); %DFT on plot
-plot([0.30 0.35], [peak_dB peak_dB], '--k','DisplayName',sprintf('cos() Peak: %.1f dB', peak_dB)); %cos() amplitude in dB on plot 
-
-xlim([0.3 0.35]);
-xlabel('DIscrete time frequency f');
-ylabel('Magnitude, dB');
-title('DTFT vs. DFT for beta = 8)');
-legend('show');
-
-
-hold off;
-
-%% Q4
-
-fprintf('NEW INSTANCE \n');
-%getting data from text file
-directory = 'C:\Users\vifro\OneDrive\Documents\MATLAB';
-file_name = 'hw4data.txt';
-file_path = fullfile(directory, file_name);
-x = load(file_path);
-x = x(:);
-
-Fs = 75 * 1000; %75 ksps = sampling frequency
-N = length(x); %is 512
-
-NFFT = 32768;
-f = linspace(0, Fs, NFFT);
-
-beta = 10;
-
-figure;
-hold on;
-
-win = kaiser(N, beta);
-x_win = x .* win;
-
-fft_x_win = fft(x_win, NFFT);
-fft_x_win_dB = 20 * log10(abs(fft_x_win) + 0.0000000000001);
-
-plot(f, fft_x_win_dB);
-
-xlim([8000 13000]);
-ylim([-100 60]);
-
-hold off;
-
-xlabel('Frequency (Hz)');
-ylabel('Magnitude (dB)');
-title('hw4data.txt Kaiser Window, Beta = 10');
-
-%calculate where gain is maximum, getting frequency
-ind_large = find(f > 9000 & f < 10000);
-[M_large, I_large] = max(fft_x_win_dB(ind_large));
-f_large = f(ind_large(I_large));
-
-ind_small = find(f > 11000 & f < 12000);
-[M_small, I_small] = max(fft_x_win_dB(ind_small));
-f_small = f(ind_small(I_small));
-
-%calculate amplitude in V
-fprintf('NEW INSTANCE \n');
-%multiply by 2 because symmetric
-%divide by window size to account for tapering by window
-A_large = 2 * abs(fft_x_win(ind_large(I_large))) / sum(win);
-A_small = 2 * abs(fft_x_win(ind_small(I_small))) / sum(win);
-
-fprintf('Large Component Frequency, Hz = %.4f\n', f_large);
-fprintf('Large Component Amplitude, V = %.4f\n', A_large);
-fprintf('Small Component Frequency, Hz = %.4f\n', f_small);
-fprintf('Small Component Amplitude, V = %.4f\n', A_small);
-
-%%
-% Testing out different beta = 0, see if same result (it's the same, mostly)
-%getting data from text file
-directory = 'C:\Users\vifro\OneDrive\Documents\MATLAB';
-file_name = 'hw4data.txt';
-file_path = fullfile(directory, file_name);
-x = load(file_path);
-x = x(:);
-
-Fs = 75 * 1000; %75 ksps = sampling frequency
-
-
 %% START HERE, MAY 2ND 
-N = 2048;
+N = 512;
 w = kaiser(N, 7.3);
 s = sum(w);
 x = x(:); %VERY IMPORTANT 
@@ -247,7 +67,8 @@ x = x(:); %VERY IMPORTANT
 
 N = 64*2048;
 plot((0:N-1)*Fs/N, abs(fft(x .* w, N)/(s*2)));
-
+%22.312 kHz, 37.99 V
+%21.352 kHz, 0.366866 V
 
 %CODE IN ORDER 
 %N = 2048
@@ -257,57 +78,4 @@ plot((0:N-1)*Fs/N, abs(fft(x .* w, N)/(s*2)));
 %stem(w)
 %plot(0:N-1, abs(fft(x .* w, N)) 
 %s = sum(w) 
-%plot((0:N-1)*Fs/N, abs(x .* w, N)/(s*2)) % ZOOM THE FUCK IN
-%%
-N = length(x); %is 512
-x = x(:);
-NFFT = 64*1024;
-
-beta = 1;
-
-figure;
-hold on;
-
-win = kaiser(N, beta);
-x_win = x .* win;
-
-fft_x_win = fft(x_win, NFFT);
-fft_x_win_dB = 20 * log10(abs(fft_x_win));
-
-%plot(f, fft_x_win_dB);
-
-%xlim([8000 13000]);
-%ylim([-100 60]);
-
-hold off;
-
-xlabel('Frequency (Hz)');
-ylabel('Amplitude (V)');
-
-%%
-fprintf('NEW INSTANCE #### \n')
-%calculate where gain is maximum, getting frequency
-ind_large = find(f > 8000 & f < 8200);
-[M_large, I_large] = max(fft_x_win_dB(ind_large));
-f_large = f(ind_large(I_large));
-
-ind_small = find(f > 8400 & f < 8600);
-[M_small, I_small] = max(fft_x_win_dB(ind_small));
-f_small = f(ind_small(I_small));
-
-% calculate amplitude in V
-fprintf('NEW INSTANCE \n');
-%multiply by 2 because symmetric
-%divide by window size to account for tapering by window
-A_large = 2 * abs(fft_x_win(ind_large(I_large))) / sum(win); %height of DTFT peak is (A/2) * W(0) 
-A_small = 2 * abs(fft_x_win(ind_small(I_small))) / sum(win);
-
-fprintf('Beta = 0, Large Component Frequency, Hz = %.4f\n', f_large);
-fprintf('Beta = 0, Large Component Amplitude, V = %.4f\n', A_large);
-fprintf('Beta = 0, Small Component Frequency, Hz = %.4f\n', f_small);
-fprintf('Beta = 0, Small Component Amplitude, V = %.4f\n', A_small);
-
-%%
-
-
-
+%plot((0:N-1)*Fs/N, abs(x .* w, N)/(s*2)) % ZOOM IN
