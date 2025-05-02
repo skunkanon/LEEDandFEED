@@ -28,7 +28,7 @@ grid on;
 hold on;
 axis([0 0.5 -90 10]);
 
-Hd = 3.2*(abs(f) > 0.29 & abs(f) < 0.41); %Numbers respectively are close to start and end of passband 
+Hd = 3.2*(abs(f) > 0.29 & abs(f) < 0.41); %Numbers respectively are close to start and end of passband, %CHANGE SCALAR TO ADJUST HEIGHT OF PASSBAND 
 Hd = Hd .* exp(-j*2*pi*f*(M-1)/2);
 
 %if you want to have a sloped passband; comment out Hd statement if not  
@@ -241,13 +241,27 @@ Fs = 75 * 1000; %75 ksps = sampling frequency
 N = 2048;
 w = kaiser(N, 7.3);
 s = sum(w);
-%N = 64*2048;
-%plot((0:N-1)*Fs/N, abs(fft(x .* w, N)/(s*2)));
+x = x(:); %VERY IMPORTANT 
+%plot(0:N-1, abs(fft(x .* w, N)));
+%%
+
+N = 64*2048;
+plot((0:N-1)*Fs/N, abs(fft(x .* w, N)/(s*2)));
+
+
+%CODE IN ORDER 
+%N = 2048
+%plot(0:N-1, abs(fft(x))
+%N = 64 * 2048
+%w = kaiser(2048, 7.3) 
+%stem(w)
+%plot(0:N-1, abs(fft(x .* w, N)) 
+%s = sum(w) 
+%plot((0:N-1)*Fs/N, abs(x .* w, N)/(s*2)) % ZOOM THE FUCK IN
 %%
 N = length(x); %is 512
 x = x(:);
 NFFT = 64*1024;
-f = linspace(0, Fs, NFFT);
 
 beta = 1;
 
@@ -285,7 +299,7 @@ f_small = f(ind_small(I_small));
 fprintf('NEW INSTANCE \n');
 %multiply by 2 because symmetric
 %divide by window size to account for tapering by window
-A_large = 2 * abs(fft_x_win(ind_large(I_large))) / sum(win);
+A_large = 2 * abs(fft_x_win(ind_large(I_large))) / sum(win); %height of DTFT peak is (A/2) * W(0) 
 A_small = 2 * abs(fft_x_win(ind_small(I_small))) / sum(win);
 
 fprintf('Beta = 0, Large Component Frequency, Hz = %.4f\n', f_large);
