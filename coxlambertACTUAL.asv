@@ -358,9 +358,49 @@ y_1p2_choke = y_1p2(1:I_1p2_choke);
 int_1p2_choke = trapz(x_1p2_choke, y_1p2_choke);
 
 %Nope, still seems to double with each increment of 0.4 x 10^19. 
+
+%% 5/19 - Isolating 'f' from isostere plots
+
+figure(6);
+hold on;
+plot(x_0p4_interp, y_0p4_interp,'b');
+plot(x_0p8_interp, y_0p8_interp,'r');
+plot(x_1p2_interp, y_1p2_interp,'m');
+hold off;
+
+
 %% 4/16 Now doing analysis with interpolated plots. 
 %0.078 coverage. 0.4 to 1.2 are at temperatures ~1065, 1162, and 1230 K. 
 %Hold on - interpolated vs raw f and S plots line up, but a slight
 %disagreement with coverage vs temperature plots. Integral over all signal
 %should be proportional to the initial coverage, yeah? 
 %4/18 - maybe only take stuff before peak? 
+
+
+
+
+arrh_x = [1/1065, 1/1162, 1/1230];
+arrh_y = [log(50*0.0382806/24.51), log(50*0.336007/26.39), log(50*0.457/33.6)];
+
+
+
+% Linear regression with stats
+X = [ones(length(arrh_x), 1), arrh_x];  % Design matrix
+[b, b_int, ~, ~, stats] = regress(arrh_y, X);  % b = [intercept; slope]
+
+% Extract results
+m_0p78 = b(2);
+b_0p78 = b(1);
+R2 = stats(1);
+slope_CI = b_int(2, :);
+intercept_CI = b_int(1, :);
+
+%predicted fit 
+arrh_y_fit = X * b;
+
+figure(7);
+hold on;
+set(gca, 'Ydir', 'reverse');
+scatter(arrh_x, arrh_y);
+plot(arrh_x, arrh_y_fit, 'DisplayName', sprintf('Regression: y = %.4fx + %.4f', m_0p78, b_0p78));
+hold off;
