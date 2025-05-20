@@ -4,21 +4,32 @@ x_0p8_raw = fig5_0p8(:,1)';
 y_0p8_raw = fig5_0p8(:,2)';
 
 scatter(x_0p8_raw, y_0p8_raw);
+offset_0p8 = 5;
 
-bg_pre_raw = y_0p8_raw(1:51); %51 = 1000 K
+bg_pre_raw = y_0p8_raw(1:51-offset_0p8); %51 = 1000 K
 bg_post_raw = y_0p8_raw(85:100); %85 = 1340 K 
+
+%bg_post_raw = y_0p8_raw(85+offset_0p8:100); %85 = 1340 K 
 
 
 bg_pre = mean(bg_pre_raw);
 bg_post = mean(bg_post_raw);
 
 % Linear background reduction 
+templowBG_0p8 = x_0p8_raw(51-offset_0p8);
+temphighBG_0p8 = x_0p8_raw(85);
 
-bg = @(x) bg_pre + (x-1000)*((bg_post-bg_pre)/(1340-1000)); %Temps that index 51 and 85 correspond to 
+%temphighBG_0p8 = x_0p8_raw(85+offset_0p8);
 
-bg_span = linspace(1000,1340,85-51+1); %Number of indices from 51 to 85 
 
-x_0p8 = x_0p8_raw(51:85); %restricting temperature range 
+
+bg = @(x) bg_pre + (x-templowBG_0p8)*((bg_post-bg_pre)/(temphighBG_0p8-templowBG_0p8)); %Temps that index 51 and 85 correspond to 
+
+bg_span = linspace(templowBG_0p8,temphighBG_0p8,85-51+1+offset_0p8); %Number of indices from 51 to 85 
+%bg_span = linspace(templowBG_0p8,temphighBG_0p8,85-51+1+offset_0p8*2); %Number of indices from 51 to 85 
+
+x_0p8 = x_0p8_raw(51-offset_0p8:85); %restricting temperature range 
+%x_0p8 = x_0p8_raw(51-offset_0p8:85+offset_0p8); %restricting temperature range 
 figure(1);
 hold on;
 plot(x_0p8_raw, bg_pre * ones(size(x_0p8_raw)), '--k', 'LineWidth', 1.5);  % dashed black line
@@ -29,7 +40,7 @@ hold off;
 
 figure(1);
 hold on;
-y_0p8 = y_0p8_raw(51:85) - bg(bg_span);
+y_0p8 = y_0p8_raw(51-offset_0p8:85) - bg(bg_span);
 scatter(x_0p8,y_0p8,'b');
 hold off;
 
@@ -44,7 +55,7 @@ figure(1);
 hold on;
 scatter(x_0p4_raw, y_0p4_raw,'r');
 hold off;
-
+% 5/20, no offset 
 bg_pre_raw_04 = y_0p4_raw(1:49); %49 = 1000 K
 bg_post_raw_04 = y_0p4_raw(83:98); %83 = 1340 K 
 
@@ -72,7 +83,7 @@ hold on;
 y_0p4 = y_0p4_raw(49:83) - bg_04(bg_span_04);
 scatter(x_0p4,y_0p4,'r');
 hold off;
-
+%%
 % 4/11 1.2
 
 
@@ -82,21 +93,22 @@ figure(1);
 hold on;
 scatter(x_1p2_raw, y_1p2_raw,'m');
 hold off;
-
-bg_pre_raw_12 = y_1p2_raw(1:51); %51 = 1000 K
-bg_post_raw_12 = y_1p2_raw(84:95); %85 = 1350 K 
-
+offset_1p2 = 9;
+bg_pre_raw_12 = y_1p2_raw(1:51-offset_1p2); %51 = 1000 K
+bg_post_raw_12 = y_1p2_raw(84+offset_1p2:95); %84 = 1350 K 
+templowBG_1p2 = x_1p2_raw(51-offset_1p2);
+temphighBG_1p2 = x_1p2_raw(84+offset_1p2);
 
 bg_pre_12 = mean(bg_pre_raw_12);
 bg_post_12 = mean(bg_post_raw_12);
 
 % Linear background reduction 
 
-bg_12 = @(x) bg_pre_12 + (x-1000)*((bg_post_12-bg_pre_12)/(1340-1000)); %Temps that index 51 and 85 correspond to 
+bg_12 = @(x) bg_pre_12 + (x-templowBG_1p2)*((bg_post_12-bg_pre_12)/(temphighBG_1p2-templowBG_1p2)); %Temps that index 51 and 85 correspond to 
 
-bg_span_12 = linspace(1000,1340,84-51+1); %Number of indices from 51 to 85 
+bg_span_12 = linspace(templowBG_1p2,temphighBG_1p2,84-51+1+offset_1p2*2); %Number of indices from 51 to 85 
 
-x_1p2 = x_1p2_raw(51:84); %restricting temperature range 
+x_1p2 = x_1p2_raw(51-offset_1p2:84+offset_1p2); %restricting temperature range 
 figure(1);
 hold on;
 plot(x_1p2_raw, bg_pre_12 * ones(size(x_1p2_raw)), '--k', 'LineWidth', 1.5);  % dashed black line
