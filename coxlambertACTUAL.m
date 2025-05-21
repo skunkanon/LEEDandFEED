@@ -21,7 +21,7 @@ temphighBG_0p8 = x_0p8_raw(85);
 
 %temphighBG_0p8 = x_0p8_raw(85+offset_0p8);
 
-
+%test test 
 
 bg = @(x) bg_pre + (x-templowBG_0p8)*((bg_post-bg_pre)/(temphighBG_0p8-templowBG_0p8)); %Temps that index 51 and 85 correspond to 
 

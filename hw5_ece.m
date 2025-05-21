@@ -1,5 +1,12 @@
 
 %%
+N = 64;
+n = 0:N-1;
+h = [1 2 -3 -3 2 1];
+x = cos(2*pi*.1*n);
+Y = fft(x,N) .* fft(h,N);
+y = ifft(Y);
+%%
 N = 8 * 1024;
 M = 200;
 beta = 9; %higher lowers ripple but widens transition band
