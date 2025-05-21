@@ -3,7 +3,7 @@
 x_0p8_raw = fig5_0p8(:,1)';
 y_0p8_raw = fig5_0p8(:,2)';
 
-scatter(x_0p8_raw, y_0p8_raw);
+%scatter(x_0p8_raw, y_0p8_raw);
 offset_0p8 = 5;
 
 bg_pre_raw = y_0p8_raw(1:51-offset_0p8); %51 = 1000 K
@@ -21,7 +21,7 @@ temphighBG_0p8 = x_0p8_raw(85);
 
 %temphighBG_0p8 = x_0p8_raw(85+offset_0p8);
 
-
+%test test 
 
 bg = @(x) bg_pre + (x-templowBG_0p8)*((bg_post-bg_pre)/(temphighBG_0p8-templowBG_0p8)); %Temps that index 51 and 85 correspond to 
 
@@ -50,12 +50,13 @@ hold off;
 
 
 x_0p4_raw = fig5_0p4(:,1)';
+
 y_0p4_raw = fig5_0p4(:,2)';
 figure(1);
 hold on;
-scatter(x_0p4_raw, y_0p4_raw,'r');
+%scatter(x_0p4_raw, y_0p4_raw,'r');
 hold off;
-% 5/20, no offset 
+% 5/20, no offset, lowest coverage 
 bg_pre_raw_04 = y_0p4_raw(1:49); %49 = 1000 K
 bg_post_raw_04 = y_0p4_raw(83:98); %83 = 1340 K 
 
@@ -83,7 +84,7 @@ hold on;
 y_0p4 = y_0p4_raw(49:83) - bg_04(bg_span_04);
 scatter(x_0p4,y_0p4,'r');
 hold off;
-%%
+
 % 4/11 1.2
 
 
@@ -91,7 +92,7 @@ x_1p2_raw = fig5_1p2(:,1)';
 y_1p2_raw = fig5_1p2(:,2)';
 figure(1);
 hold on;
-scatter(x_1p2_raw, y_1p2_raw,'m');
+%scatter(x_1p2_raw, y_1p2_raw,'m');
 hold off;
 offset_1p2 = 9;
 bg_pre_raw_12 = y_1p2_raw(1:51-offset_1p2); %51 = 1000 K
@@ -119,12 +120,77 @@ hold off;
 
 figure(1);
 hold on;
-y_1p2 = y_1p2_raw(51:84) - bg_12(bg_span_12);
+y_1p2 = y_1p2_raw(51-offset_1p2:84+offset_1p2) - bg_12(bg_span_12);
 scatter(x_1p2,y_1p2,'m');
 hold off;
 
 title('Linear Background Reduction');
-ylim([0 1]);
+ylim([0 2]);
+% 5/21 - Messed up the axes scale on the original scans, but only fixed for the lower coverage ones. Fixing that for 1.6 x 10^19 here. 
+%Should just redo all the scans? 
+
+fig5_1p6_x_corrected = fig5_1p6(:,1) ./(15/12) + 300;
+fig5_1p6_y_corrected = (fig5_1p6(:,2) * 2.5);
+clf(10);
+figure(10);
+hold on;
+scatter(fig5_0p4(:,1),fig5_0p4(:,2));
+scatter(fig5_0p8(:,1),fig5_0p8(:,2));
+scatter(fig5_1p2(:,1),fig5_1p2(:,2));
+scatter(fig5_1p6_x_corrected,fig5_1p6_y_corrected);
+%scatter(fig5_2p0(:,1),fig5_2p0(:,2));
+%scatter(fig5_2p8(:,1),fig5_2p8(:,2));
+hold off;
+
+ 
+
+
+% 5/20, 1.6 
+
+
+
+x_1p6_raw = fig5_1p6_x_corrected;
+y_1p6_raw = fig5_1p6_y_corrected;
+%clf(1);
+figure(1);
+hold on;
+scatter(x_1p6_raw, y_1p6_raw,'g');
+hold off;
+offset_1p6 = 12 * 3;
+bg_pre_raw_16 = y_1p6_raw(1:51 * 3-offset_1p6); %51 = 1000 K, multiplied by three because of higher sampling rate
+bg_post_raw_16 = y_1p6_raw(84 * 3: length(x_1p6_raw)); %84 = 1350 K 
+templowBG_1p6 = x_1p6_raw(51 * 3 -offset_1p6);
+temphighBG_1p6 = x_1p6_raw(84 *3);
+
+bg_pre_16 = mean(bg_pre_raw_16);
+bg_post_16 = mean(bg_post_raw_16);
+
+% Linear background reduction 
+
+bg_16 = @(x) bg_pre_16 + (x-templowBG_1p6)*((bg_post_16-bg_pre_16)/(temphighBG_1p6-templowBG_1p6)); %Temps that index 51 and 85 correspond to 
+
+bg_span_16 = linspace(templowBG_1p6,temphighBG_1p6,84*3-51*3+1+offset_1p6); %Number of indices from 51 to 85 
+bg_span_16 = bg_span_16';
+
+x_1p6 = x_1p6_raw(51*3-offset_1p6:84*3); %restricting temperature range 
+figure(1);
+hold on;
+plot(x_1p6_raw, bg_pre_16 * ones(size(x_1p6_raw)), '--k', 'LineWidth', 1.5);  % dashed black line
+plot(x_1p6_raw, bg_post_16 * ones(size(x_1p6_raw)), '--k', 'LineWidth', 1.5);
+plot(bg_span_16,bg_16(bg_span_16),'g');
+plot(x_1p6_raw,y_1p6_raw,'g');
+hold off;
+%
+fprintf('NEW INSTANCE \n');
+figure(1);
+hold on;
+y_1p6 = y_1p6_raw(51*3-offset_1p6:84*3) - bg_16(bg_span_16);
+scatter(x_1p6,y_1p6,'g');
+hold off;
+
+title('Linear Background Reduction');
+ylim([0 1.3]);
+xlim([800 1500]);
 
 %% 4/15 - Determining coverage from dosage, with relation from LEED 
 % Copied from 'appendthistoCL81...m'. Run 'coxlambertscan_fig2cov.m first'.
@@ -179,7 +245,7 @@ grid on;
 N0_1p2 = 0.2877;
 N0_0p4 = 0.0908;
 N0_0p8 = 0.2004;
-
+N0_1p6 = 0.3856; %5/21 
 figure(3);
 hold on;
 
@@ -213,11 +279,25 @@ N_1p2 = N_1p2 * (N0_1p2 / max_1p2);
 scatter(x_1p2, N_1p2, 'm');
 plot(x_1p2 , N_1p2 , 'm');
 
+
+N_1p6 = zeros(1,length(x_1p2)); %yeah this is screwed 5/21 re-scan the plots 
+for i = 1:length(x_1p6)
+    N_1p6(i) = trapz(y_1p6(1:length(x_1p6) + 1 - i));
+end
+[max_1p6, ~] = max(N_1p6);
+N_1p6 = N_1p6 * (N0_1p6 / max_1p6);
+scatter(x_1p6, N_1p6, 'g');
+plot(x_1p6 , N_1p6 , 'g');
+
+
 title('Coverage vs temperature');
 ylim([0 1/3]);
 
 
 %% 4/15  Taking background reduction from figure 1 and adding integrals of each isostere. 
+% 5/21 - Multiplying the signal by the initial coverage to force the signal
+% and desorption rate proportional. Use these values for F and S in the
+% Arrhenius plot. 
 fprintf('########### NEW INSTANCE \n ')
 
 figure(4);
@@ -225,9 +305,9 @@ hold on;
 
 S_0p4 = zeros(1,length(x_0p4));
 for i = 1:length(x_0p4)
-    S_0p4(i) = trapz(y_0p4(1:length(x_0p4) +1 - i))/length(S_0p4);
+    S_0p4(i) = trapz(N0_0p4 .* y_0p4(1:length(x_0p4) +1 - i))/length(S_0p4);
 end
-int_0p4 = trapz(x_0p4, y_0p4);
+int_0p4 = trapz(x_0p4, y_0p4 .* N0_0p4);
 S_0p4 = S_0p4 * int_0p4/max(S_0p4);
 scatter(x_0p4, S_0p4, 'r');
 plot(x_0p4, S_0p4, 'r');
@@ -235,13 +315,13 @@ plot(x_0p4, y_0p4,'r');
 
 S_0p8 = zeros(1,length(x_0p8));
 for i = 1:length(x_0p8)
-    S_0p8(i) = trapz(y_0p8(1:length(x_0p8) +1 - i))/length(S_0p8);
+    S_0p8(i) = trapz(N0_0p8 .* y_0p8(1:length(x_0p8) +1 - i))/length(S_0p8);
 end
-int_0p8 = trapz(x_0p8, y_0p8);
+int_0p8 = trapz(x_0p8, y_0p8 .* N0_0p8);
 S_0p8 = S_0p8 * int_0p8/max(S_0p8);
 scatter(x_0p8, S_0p8,'b');
 plot(x_0p8, S_0p8,'b');
-plot(x_0p8, y_0p8, 'b');
+plot(x_0p8, y_0p8 .* N0_0p8, 'b');
 
 
 S_1p2 = zeros(1,length(x_1p2));
@@ -380,9 +460,62 @@ plot(x_0p8_interp, y_0p8_interp,'r');
 plot(x_1p2_interp, y_1p2_interp,'m');
 hold off;
 
+%% 5/21 - Properly scaled S and F plots
+
+N0_1p2 = 0.2877;
+N0_0p4 = 0.0908;
+N0_0p8 = 0.2004;
+N0_1p6 = 0.3856; %5/21 
+figure(3);
+hold on;
+
+N_0p8 = zeros(1,length(x_0p8));
+for i = 1:length(x_0p8)
+    N_0p8(i) = trapz(y_0p8(1:length(x_0p8) +1 - i));
+end
+[max_0p8, ~] = max(N_0p8);
+N_0p8 = N_0p8 * (N0_0p8 / max_0p8);
+plot(x_0p8, N_0p8, 'b');
+scatter(x_0p8, N_0p8 , 'b');
+plot(x_0p8, y_0p8,'b');
+
+
+N_0p4 = zeros(1,length(x_0p4));
+for i = 1:length(x_0p4)
+    N_0p4(i) = trapz(y_0p4(1:length(x_0p4) + 1 - i));
+end
+[max_0p4, ~] = max(N_0p4);
+N_0p4 = N_0p4 * (N0_0p4 / max_0p4);
+scatter(x_0p4, N_0p4, 'r');
+plot(x_0p4 , N_0p4, 'r');
+plot(x_0p4, y_0p4, 'r');
+
+N_1p2 = zeros(1,length(x_1p2));
+for i = 1:length(x_1p2)
+    N_1p2(i) = trapz(y_1p2(1:length(x_1p2) + 1 - i));
+end
+[max_1p2, ~] = max(N_1p2);
+N_1p2 = N_1p2 * (N0_1p2 / max_1p2);
+scatter(x_1p2, N_1p2, 'm');
+plot(x_1p2 , N_1p2 , 'm');
+plot(x_1p2, y_1p2, 'm');
+
+N_1p6 = zeros(1,length(x_1p2)); %yeah this is screwed 5/21 re-scan the plots 
+for i = 1:length(x_1p6)
+    N_1p6(i) = trapz(y_1p6(1:length(x_1p6) + 1 - i));
+end
+[max_1p6, ~] = max(N_1p6);
+N_1p6 = N_1p6 * (N0_1p6 / max_1p6);
+%scatter(x_1p6, N_1p6, 'g');
+%plot(x_1p6 , N_1p6 , 'g');
+
+
+title('Coverage vs temperature');
+ylim([0 1/3]);
 
 %% 4/16 Now doing analysis with interpolated plots. 
-%0.078 coverage. 0.4 to 1.2 are at temperatures ~1065, 1162, and 1230 K. 
+%0.078 coverage. 0.4 to 1.2 are at temperatures ~1065, 1162, and 1230 K.
+%(5/21 - used 0.8 in figure 7)
 %Hold on - interpolated vs raw f and S plots line up, but a slight
 %disagreement with coverage vs temperature plots. Integral over all signal
 %should be proportional to the initial coverage, yeah? 
@@ -394,25 +527,26 @@ hold off;
 arrh_x = [1/1065, 1/1162, 1/1230];
 arrh_y = [log(50*0.0382806/24.51), log(50*0.336007/26.39), log(50*0.457/33.6)];
 
+p = polyfit(arrh_x, arrh_y, 1);
 
+% Extract slope and intercept
+slope = p(1);
+intercept = p(2);
 
-% Linear regression with stats
-X = [ones(length(arrh_x), 1), arrh_x];  % Design matrix
-[b, b_int, ~, ~, stats] = regress(arrh_y, X);  % b = [intercept; slope]
+% Generate fit line
+x_fit = linspace(min(arrh_x), max(arrh_x), 100);
+y_fit = polyval(p, x_fit);
 
-% Extract results
-m_0p78 = b(2);
-b_0p78 = b(1);
-R2 = stats(1);
-slope_CI = b_int(2, :);
-intercept_CI = b_int(1, :);
-
-%predicted fit 
-arrh_y_fit = X * b;
-
-figure(7);
+% Plot
+figure;
+scatter(arrh_x, arrh_y, 'filled');
 hold on;
-set(gca, 'Ydir', 'reverse');
-scatter(arrh_x, arrh_y);
-plot(arrh_x, arrh_y_fit, 'DisplayName', sprintf('Regression: y = %.4fx + %.4f', m_0p78, b_0p78));
-hold off;
+plot(x_fit, y_fit, 'r-', 'LineWidth', 2);
+xlabel('1/T (1/K)');
+ylabel('ln(k)');
+title('Arrhenius Plot');
+grid on;
+legend('Data', 'Linear Fit');
+
+% Display the equation
+fprintf('Fit equation: ln(k) = %.4f*(1/T) + %.4f\n', slope, intercept);
