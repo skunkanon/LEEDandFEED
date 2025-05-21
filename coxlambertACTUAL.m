@@ -43,13 +43,14 @@ hold on;
 y_0p8 = y_0p8_raw(51-offset_0p8:85) - bg(bg_span);
 scatter(x_0p8,y_0p8,'b');
 hold off;
-%%
+
 % Doing 0.4 
 
 
 
 
 x_0p4_raw = fig5_0p4(:,1)';
+
 y_0p4_raw = fig5_0p4(:,2)';
 figure(1);
 hold on;
@@ -83,7 +84,7 @@ hold on;
 y_0p4 = y_0p4_raw(49:83) - bg_04(bg_span_04);
 scatter(x_0p4,y_0p4,'r');
 hold off;
-%%
+
 % 4/11 1.2
 
 
@@ -119,7 +120,7 @@ hold off;
 
 figure(1);
 hold on;
-y_1p2 = y_1p2_raw(51:84) - bg_12(bg_span_12);
+y_1p2 = y_1p2_raw(51-offset_1p2:84+offset_1p2) - bg_12(bg_span_12);
 scatter(x_1p2,y_1p2,'m');
 hold off;
 
