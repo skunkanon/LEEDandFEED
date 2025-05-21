@@ -131,16 +131,16 @@ ylim([0 2]);
 
 fig5_1p6_x_corrected = fig5_1p6(:,1) ./(15/12) + 300;
 fig5_1p6_y_corrected = (fig5_1p6(:,2) * 2.5);
-clf(10);
-figure(10);
-hold on;
-scatter(fig5_0p4(:,1),fig5_0p4(:,2));
-scatter(fig5_0p8(:,1),fig5_0p8(:,2));
-scatter(fig5_1p2(:,1),fig5_1p2(:,2));
-scatter(fig5_1p6_x_corrected,fig5_1p6_y_corrected);
+%clf(10);
+%figure(10);
+%hold on;
+%scatter(fig5_0p4(:,1),fig5_0p4(:,2));
+%scatter(fig5_0p8(:,1),fig5_0p8(:,2));
+%scatter(fig5_1p2(:,1),fig5_1p2(:,2));
+%scatter(fig5_1p6_x_corrected,fig5_1p6_y_corrected);
 %scatter(fig5_2p0(:,1),fig5_2p0(:,2));
 %scatter(fig5_2p8(:,1),fig5_2p8(:,2));
-hold off;
+%hold off;
 
  
 
@@ -154,7 +154,7 @@ y_1p6_raw = fig5_1p6_y_corrected;
 %clf(1);
 figure(1);
 hold on;
-scatter(x_1p6_raw, y_1p6_raw,'g');
+%scatter(x_1p6_raw, y_1p6_raw,'g');
 hold off;
 offset_1p6 = 12 * 3;
 bg_pre_raw_16 = y_1p6_raw(1:51 * 3-offset_1p6); %51 = 1000 K, multiplied by three because of higher sampling rate
@@ -247,6 +247,7 @@ N0_0p4 = 0.0908;
 N0_0p8 = 0.2004;
 N0_1p6 = 0.3856; %5/21 
 figure(3);
+clf(3);
 hold on;
 
 N_0p8 = zeros(1,length(x_0p8));
@@ -257,7 +258,7 @@ end
 N_0p8 = N_0p8 * (N0_0p8 / max_0p8);
 plot(x_0p8, N_0p8, 'b');
 scatter(x_0p8, N_0p8 , 'b');
-
+plot(x_0p8, y_0p8.*N0_0p8,'b');
 
 
 N_0p4 = zeros(1,length(x_0p4));
@@ -268,7 +269,7 @@ end
 N_0p4 = N_0p4 * (N0_0p4 / max_0p4);
 scatter(x_0p4, N_0p4, 'r');
 plot(x_0p4 , N_0p4, 'r');
-
+plot(x_0p4, y_0p4.*N0_0p4,'r');
 
 N_1p2 = zeros(1,length(x_1p2));
 for i = 1:length(x_1p2)
@@ -278,20 +279,20 @@ end
 N_1p2 = N_1p2 * (N0_1p2 / max_1p2);
 scatter(x_1p2, N_1p2, 'm');
 plot(x_1p2 , N_1p2 , 'm');
+plot(x_1p2, y_1p2 .* N0_1p2,'m');
 
-
-N_1p6 = zeros(1,length(x_1p2)); %yeah this is screwed 5/21 re-scan the plots 
+N_1p6 = zeros(1,length(x_1p2)); %yeah this is screwed 5/21 re-scan the plots. inflection point (peak temp) is screwed)  
 for i = 1:length(x_1p6)
     N_1p6(i) = trapz(y_1p6(1:length(x_1p6) + 1 - i));
 end
 [max_1p6, ~] = max(N_1p6);
 N_1p6 = N_1p6 * (N0_1p6 / max_1p6);
-scatter(x_1p6, N_1p6, 'g');
-plot(x_1p6 , N_1p6 , 'g');
+%scatter(x_1p6, N_1p6, 'g'); %commenting out these because screwed
+%plot(x_1p6 , N_1p6 , 'g');
 
 
 title('Coverage vs temperature');
-ylim([0 1/3]);
+ylim([0 0.5]);
 
 
 %% 4/15  Taking background reduction from figure 1 and adding integrals of each isostere. 
@@ -305,9 +306,9 @@ hold on;
 
 S_0p4 = zeros(1,length(x_0p4));
 for i = 1:length(x_0p4)
-    S_0p4(i) = trapz(N0_0p4 .* y_0p4(1:length(x_0p4) +1 - i))/length(S_0p4);
+    S_0p4(i) = trapz(y_0p4(1:length(x_0p4) +1 - i))/length(S_0p4);
 end
-int_0p4 = trapz(x_0p4, y_0p4 .* N0_0p4);
+int_0p4 = trapz(x_0p4, y_0p4);
 S_0p4 = S_0p4 * int_0p4/max(S_0p4);
 scatter(x_0p4, S_0p4, 'r');
 plot(x_0p4, S_0p4, 'r');
@@ -515,7 +516,7 @@ ylim([0 1/3]);
 
 %% 4/16 Now doing analysis with interpolated plots. 
 %0.078 coverage. 0.4 to 1.2 are at temperatures ~1065, 1162, and 1230 K.
-%(5/21 - used 0.8 in figure 7)
+%(5/21 - used 0.8 x 10^19 in figure 7. Corresponds to ~0.2 coverage.)
 %Hold on - interpolated vs raw f and S plots line up, but a slight
 %disagreement with coverage vs temperature plots. Integral over all signal
 %should be proportional to the initial coverage, yeah? 
@@ -524,8 +525,10 @@ ylim([0 1/3]);
 
 
 
-arrh_x = [1/1065, 1/1162, 1/1230];
-arrh_y = [log(50*0.0382806/24.51), log(50*0.336007/26.39), log(50*0.457/33.6)];
+%arrh_x = [1/1065, 1/1162, 1/1230];
+%arrh_y = [log(50*0.0382806/24.51), log(50*0.336007/26.39), log(50*0.457/33.6)];
+arrh_x = [1/950, 1/1150];
+arrh_y = [log(50 * 0.004/0.2), log(50 * 0.1692/0.2)];
 
 p = polyfit(arrh_x, arrh_y, 1);
 
@@ -538,15 +541,18 @@ x_fit = linspace(min(arrh_x), max(arrh_x), 100);
 y_fit = polyval(p, x_fit);
 
 % Plot
-figure;
-scatter(arrh_x, arrh_y, 'filled');
+figure(11);
+scatter(arrh_x * 10^3, arrh_y, 'filled');
 hold on;
-plot(x_fit, y_fit, 'r-', 'LineWidth', 2);
-xlabel('1/T (1/K)');
-ylabel('ln(k)');
+plot(x_fit * 10^3, y_fit, 'r-', 'LineWidth', 2);
+xlabel('1/T (1/K)  *10^3');
+ylabel('ln(beta * f /s)');
 title('Arrhenius Plot');
 grid on;
 legend('Data', 'Linear Fit');
-
+set(gca, 'YDir','reverse')
 % Display the equation
-fprintf('Fit equation: ln(k) = %.4f*(1/T) + %.4f\n', slope, intercept);
+fprintf('Fit equation: ln(beta * f/s) = %.4f*(1/T) + %.4f\n', slope, intercept);
+fprintf('Ea in kJ/mol for 0.8 x 10^19 dosage \n = %.4f\n', slope*(-8.314)/1000);
+fprintf('Pre-exponential factor in s^-1 for 0.8 x 10^19 dosage \n = %.4e\n', exp(intercept));
+fprintf('Log10() of pre-exponential = %.4e\n')
