@@ -2,7 +2,7 @@
 
 scatter(normcoverage(:, 1), normcoverage(:, 2)); %regular plot function loops back in on itself 
 
-%% very crude method for calibrating the axes lol. bring the last number in x_interp at line 15 to 60,000 and find where it's  1.4 
+%% very crude method for calibrating the axes lol. bring the last number in x_interp at line 15 to   60,000 and find where it's  1.4 
 
 % Step 1: Remove duplicate x-values before interpolation
 [unique_x, idx] = unique(normcoverage(:,1)); 
