@@ -73,7 +73,7 @@ Ea = @(C) Ea_0 - C*y_E;
 
 
 %defining experimental conditions
-beta = 8; % Kelvin/s
+beta = 35; % Kelvin/s
 init_tmp = 300; %initial temperature
 ds_time = 20; %define desorption duration in seconds
 t_span = linspace(0,ds_time,10000); %array of times from start through whole duration
@@ -82,12 +82,12 @@ t_span = linspace(0,ds_time,10000); %array of times from start through whole dur
 tmp = @(t) beta*t + init_tmp; %function declaration
 tmp_span = tmp(t_span); %independent variable for spectra spanning duration 
 
-C_0 = 0.1;
+C_0 = 1;
 f = 0.9;
 g = @(C) (C/C_0)*(C_0 - C + f*C_0);
 
 dCdt = @(t,C) -v * g(C) * exp(-Ea(C)/(R*tmp(t))); % = -N, the rate of desorption
-options = odeset('RelTol', 1e-13, 'AbsTol', 1e-19); % Adjust tolerances
+options = odeset('RelTol', 1e-6, 'AbsTol', 1e-9); % Adjust tolerances
 [t,C] = ode23s(dCdt, t_span,C_0,options);
 
 

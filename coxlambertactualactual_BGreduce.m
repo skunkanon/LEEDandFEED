@@ -1,0 +1,520 @@
+%5/21 - run a bunch of stuff from coxlambertACTUAL first 
+%Activation energy checks out but the pre-exponential is off by two orders
+%of magnitude. Going to include 2.8 x 10^19, which should give five points
+%for determining Ea and pre-exponential. Need to digitize the plots again. Run coxlambertscanfig5ACTUAL before this
+
+if true
+figure(20);
+clf(1);
+hold on;
+scatter(new_fig5_0p4(:,1)', new_fig5_0p4(:,2)');
+scatter(new_fig5_0p8(:,1)', new_fig5_0p8(:,2)');
+scatter(new_fig5_1p2(:,1)', new_fig5_1p2(:,2)');
+scatter(new_fig5_1p6(:,1)', new_fig5_1p6(:,2)');
+scatter(new_fig5_2p0(:,1)', new_fig5_2p0(:,2)');
+scatter(new_fig5_2p8(:,1)', new_fig5_2p8(:,2)');
+scatter(new_fig5_4p0(:,1), new_fig5_4p0(:,2)');
+scatter(new_fig5_8p0(:,1)', new_fig5_8p0(:,2)');
+hold off; 
+end
+
+
+downSHIFT = 0; 
+upSHIFT = 100; 
+%% 0p4 BG - Could be using a separate function that just takes the arguments, but this'll do for now.
+templowBG_0p4_target = 940; %Only two variables you need to adjust on a case-by-case basis. 
+temphighBG_0p4_target = 1300; %Definte upper and lower bounds for the peak. 
+
+
+
+
+new_x_0p4_raw = new_fig5_0p4(:,1)'; %Read off of 
+new_y_0p4_raw = new_fig5_0p4(:,2)'; 
+
+
+[~, templowBG_ind_0p4] = min(abs(new_x_0p4_raw-templowBG_0p4_target)); 
+new_templowBG_0p4 = new_x_0p4_raw(templowBG_ind_0p4);
+new_BG_pre_raw_0p4 = new_y_0p4_raw(1:templowBG_ind_0p4);
+new_BG_pre_0p4 = mean(new_BG_pre_raw_0p4);
+
+[~, temphighBG_ind_0p4] = min(abs(new_x_0p4_raw-temphighBG_0p4_target));
+new_temphighBG_0p4 = new_x_0p4_raw(temphighBG_ind_0p4);
+new_BG_post_raw_0p4 = new_y_0p4_raw(temphighBG_ind_0p4: length(new_y_0p4_raw));
+new_BG_post_0p4 = mean(new_BG_post_raw_0p4);
+
+new_BG_0p4 = @(x) new_BG_pre_0p4 + (x - new_templowBG_0p4) * ...
+    ((new_BG_post_0p4 - new_BG_pre_0p4) ...
+    /(new_temphighBG_0p4 - new_templowBG_0p4));
+
+new_BG_span_0p4 = linspace(new_templowBG_0p4 , new_temphighBG_0p4 ...
+    ,(temphighBG_ind_0p4 - templowBG_ind_0p4 + 1));
+
+
+
+
+new_x_0p4 = new_x_0p4_raw(templowBG_ind_0p4:temphighBG_ind_0p4);
+new_y_0p4 = new_y_0p4_raw(templowBG_ind_0p4 : temphighBG_ind_0p4) ...
+    -new_BG_0p4(new_BG_span_0p4);
+
+
+figure(1);
+
+hold on; 
+plot(new_x_0p4_raw, new_BG_pre_0p4 * ones(size(new_x_0p4_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_x_0p4_raw, new_BG_post_0p4 * ones(size(new_x_0p4_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_BG_span_0p4, new_BG_0p4(new_BG_span_0p4));
+plot(new_x_0p4_raw, new_y_0p4_raw);
+
+hold off;
+
+
+zerocutoff_0p4 = find(new_y_0p4 < 0 , 1 , 'last');
+new_y_0p4 = new_y_0p4(zerocutoff_0p4:  length(new_BG_span_0p4));
+new_x_0p4 = new_x_0p4(zerocutoff_0p4 : length(new_BG_span_0p4));
+
+
+figure(1);
+hold on;
+scatter(new_x_0p4, new_y_0p4);
+hold off;
+
+%% 0p8 BG
+
+fprintf('NEW INSTANCE \n');
+templowBG_0p8_target = 950 + downSHIFT;
+temphighBG_0p8_target = 1400 + upSHIFT;
+
+
+
+
+new_x_0p8_raw = new_fig5_0p8(:,1)'; 
+new_y_0p8_raw = new_fig5_0p8(:,2)'; 
+
+
+[~, templowBG_ind_0p8] = min(abs(new_x_0p8_raw-templowBG_0p8_target)); 
+new_templowBG_0p8 = new_x_0p8_raw(templowBG_ind_0p8);
+new_BG_pre_raw_0p8 = new_y_0p8_raw(1:templowBG_ind_0p8);
+new_BG_pre_0p8 = mean(new_BG_pre_raw_0p8);
+
+[~, temphighBG_ind_0p8] = min(abs(new_x_0p8_raw-temphighBG_0p8_target));
+new_temphighBG_0p8 = new_x_0p8_raw(temphighBG_ind_0p8);
+new_BG_post_raw_0p8 = new_y_0p8_raw(temphighBG_ind_0p8: length(new_y_0p8_raw));
+new_BG_post_0p8 = mean(new_BG_post_raw_0p8);
+
+new_BG_0p8 = @(x) new_BG_pre_0p8 + (x - new_templowBG_0p8) * ...
+    ((new_BG_post_0p8 - new_BG_pre_0p8) ...
+    /(new_temphighBG_0p8 - new_templowBG_0p8));
+
+new_BG_span_0p8 = linspace(new_templowBG_0p8 , new_temphighBG_0p8 ...
+    ,(temphighBG_ind_0p8 - templowBG_ind_0p8 + 1));
+
+
+
+
+new_x_0p8 = new_x_0p8_raw(templowBG_ind_0p8:temphighBG_ind_0p8);
+new_y_0p8 = new_y_0p8_raw(templowBG_ind_0p8 : temphighBG_ind_0p8) ...
+    -new_BG_0p8(new_BG_span_0p8);
+
+
+figure(1);
+
+hold on; 
+plot(new_x_0p8_raw, new_BG_pre_0p8 * ones(size(new_x_0p8_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_x_0p8_raw, new_BG_post_0p8 * ones(size(new_x_0p8_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_BG_span_0p8, new_BG_0p8(new_BG_span_0p8));
+plot(new_x_0p8_raw, new_y_0p8_raw);
+
+hold off;
+
+%{
+zerocutoff_0p8 = find(new_y_0p8 < 0 , 1 , 'last');
+if ~isempty(zerocutoff_0p8)
+new_y_0p8 = new_y_0p8(zerocutoff_0p8:  length(new_BG_span_0p8));
+new_x_0p8 = new_x_0p8(zerocutoff_0p8 : length(new_BG_span_0p8));
+end
+%}
+figure(1);
+hold on;
+scatter(new_x_0p8, new_y_0p8,'g');
+hold off;
+
+
+
+%% 1p2 BG
+
+fprintf('NEW INSTANCE \n');
+templowBG_1p2_target = 938 + downSHIFT;
+temphighBG_1p2_target = 1400 + upSHIFT;
+
+
+
+
+new_x_1p2_raw = new_fig5_1p2(:,1)'; 
+new_y_1p2_raw = new_fig5_1p2(:,2)'; 
+
+
+[~, templowBG_ind_1p2] = min(abs(new_x_1p2_raw-templowBG_1p2_target)); 
+new_templowBG_1p2 = new_x_1p2_raw(templowBG_ind_1p2);
+new_BG_pre_raw_1p2 = new_y_1p2_raw(1:templowBG_ind_1p2);
+new_BG_pre_1p2 = mean(new_BG_pre_raw_1p2);
+
+[~, temphighBG_ind_1p2] = min(abs(new_x_1p2_raw-temphighBG_1p2_target));
+new_temphighBG_1p2 = new_x_1p2_raw(temphighBG_ind_1p2);
+new_BG_post_raw_1p2 = new_y_1p2_raw(temphighBG_ind_1p2: length(new_y_1p2_raw));
+new_BG_post_1p2 = mean(new_BG_post_raw_1p2);
+
+new_BG_1p2 = @(x) new_BG_pre_1p2 + (x - new_templowBG_1p2) * ...
+    ((new_BG_post_1p2 - new_BG_pre_1p2) ...
+    /(new_temphighBG_1p2 - new_templowBG_1p2));
+
+new_BG_span_1p2 = linspace(new_templowBG_1p2 , new_temphighBG_1p2 ...
+    ,(temphighBG_ind_1p2 - templowBG_ind_1p2 + 1));
+
+
+
+
+new_x_1p2 = new_x_1p2_raw(templowBG_ind_1p2:temphighBG_ind_1p2);
+new_y_1p2 = new_y_1p2_raw(templowBG_ind_1p2 : temphighBG_ind_1p2) ...
+    -new_BG_1p2(new_BG_span_1p2);
+
+
+figure(1);
+
+hold on; 
+plot(new_x_1p2_raw, new_BG_pre_1p2 * ones(size(new_x_1p2_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_x_1p2_raw, new_BG_post_1p2 * ones(size(new_x_1p2_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_BG_span_1p2, new_BG_1p2(new_BG_span_1p2));
+plot(new_x_1p2_raw, new_y_1p2_raw);
+
+hold off;
+
+%{
+zerocutoff_1p2 = find(new_y_1p2 < 0 , 1 , 'last');
+if ~isempty(zerocutoff_1p2)
+new_y_1p2 = new_y_1p2(zerocutoff_1p2:  length(new_BG_span_1p2));
+new_x_1p2 = new_x_1p2(zerocutoff_1p2 : length(new_BG_span_1p2));
+end
+%}
+figure(1);
+hold on;
+scatter(new_x_1p2, new_y_1p2,'b');
+hold off;
+
+
+%% 1p6 BG
+
+fprintf('NEW INSTANCE \n');
+templowBG_1p6_target = 926 + downSHIFT;
+temphighBG_1p6_target = 1400 + upSHIFT;
+
+
+
+
+new_x_1p6_raw = new_fig5_1p6(:,1)'; 
+new_y_1p6_raw = new_fig5_1p6(:,2)'; 
+
+
+[~, templowBG_ind_1p6] = min(abs(new_x_1p6_raw-templowBG_1p6_target)); 
+new_templowBG_1p6 = new_x_1p6_raw(templowBG_ind_1p6);
+new_BG_pre_raw_1p6 = new_y_1p6_raw(1:templowBG_ind_1p6);
+new_BG_pre_1p6 = mean(new_BG_pre_raw_1p6);
+
+[~, temphighBG_ind_1p6] = min(abs(new_x_1p6_raw-temphighBG_1p6_target));
+new_temphighBG_1p6 = new_x_1p6_raw(temphighBG_ind_1p6);
+new_BG_post_raw_1p6 = new_y_1p6_raw(temphighBG_ind_1p6: length(new_y_1p6_raw));
+new_BG_post_1p6 = mean(new_BG_post_raw_1p6);
+
+new_BG_1p6 = @(x) new_BG_pre_1p6 + (x - new_templowBG_1p6) * ...
+    ((new_BG_post_1p6 - new_BG_pre_1p6) ...
+    /(new_temphighBG_1p6 - new_templowBG_1p6));
+
+new_BG_span_1p6 = linspace(new_templowBG_1p6 , new_temphighBG_1p6 ...
+    ,(temphighBG_ind_1p6 - templowBG_ind_1p6 + 1));
+
+
+
+
+new_x_1p6 = new_x_1p6_raw(templowBG_ind_1p6:temphighBG_ind_1p6);
+new_y_1p6 = new_y_1p6_raw(templowBG_ind_1p6 : temphighBG_ind_1p6) ...
+    -new_BG_1p6(new_BG_span_1p6);
+
+
+figure(1);
+
+hold on; 
+plot(new_x_1p6_raw, new_BG_pre_1p6 * ones(size(new_x_1p6_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_x_1p6_raw, new_BG_post_1p6 * ones(size(new_x_1p6_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_BG_span_1p6, new_BG_1p6(new_BG_span_1p6));
+plot(new_x_1p6_raw, new_y_1p6_raw);
+
+hold off;
+
+%{
+zerocutoff_1p6 = find(new_y_1p6 < 0 , 1 , 'last');
+if ~isempty(zerocutoff_1p6)
+new_y_1p6 = new_y_1p6(zerocutoff_1p6:  length(new_BG_span_1p6));
+new_x_1p6 = new_x_1p6(zerocutoff_1p6 : length(new_BG_span_1p6));
+end
+%}
+figure(1);
+hold on;
+scatter(new_x_1p6, new_y_1p6,'r');
+hold off;
+
+%% 2p0 BG
+
+fprintf('NEW INSTANCE \n');
+templowBG_2p0_target = 904 + downSHIFT;
+temphighBG_2p0_target = 1400 + upSHIFT;
+
+
+
+
+new_x_2p0_raw = new_fig5_2p0(:,1)'; 
+new_y_2p0_raw = new_fig5_2p0(:,2)'; 
+
+
+[~, templowBG_ind_2p0] = min(abs(new_x_2p0_raw-templowBG_2p0_target)); 
+new_templowBG_2p0 = new_x_2p0_raw(templowBG_ind_2p0);
+new_BG_pre_raw_2p0 = new_y_2p0_raw(1:templowBG_ind_2p0);
+new_BG_pre_2p0 = mean(new_BG_pre_raw_2p0);
+
+[~, temphighBG_ind_2p0] = min(abs(new_x_2p0_raw-temphighBG_2p0_target));
+new_temphighBG_2p0 = new_x_2p0_raw(temphighBG_ind_2p0);
+new_BG_post_raw_2p0 = new_y_2p0_raw(temphighBG_ind_2p0: length(new_y_2p0_raw));
+new_BG_post_2p0 = mean(new_BG_post_raw_2p0);
+
+new_BG_2p0 = @(x) new_BG_pre_2p0 + (x - new_templowBG_2p0) * ...
+    ((new_BG_post_2p0 - new_BG_pre_2p0) ...
+    /(new_temphighBG_2p0 - new_templowBG_2p0));
+
+new_BG_span_2p0 = linspace(new_templowBG_2p0 , new_temphighBG_2p0 ...
+    ,(temphighBG_ind_2p0 - templowBG_ind_2p0 + 1));
+
+
+
+
+new_x_2p0 = new_x_2p0_raw(templowBG_ind_2p0:temphighBG_ind_2p0);
+new_y_2p0 = new_y_2p0_raw(templowBG_ind_2p0 : temphighBG_ind_2p0) ...
+    -new_BG_2p0(new_BG_span_2p0);
+
+
+figure(1);
+
+hold on; 
+plot(new_x_2p0_raw, new_BG_pre_2p0 * ones(size(new_x_2p0_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_x_2p0_raw, new_BG_post_2p0 * ones(size(new_x_2p0_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_BG_span_2p0, new_BG_2p0(new_BG_span_2p0));
+plot(new_x_2p0_raw, new_y_2p0_raw);
+
+hold off;
+
+%{
+zerocutoff_2p0 = find(new_y_2p0 < 0 , 1 , 'last');
+if ~isempty(zerocutoff_2p0)
+new_y_2p0 = new_y_2p0(zerocutoff_2p0:  length(new_BG_span_2p0));
+new_x_2p0 = new_x_2p0(zerocutoff_2p0 : length(new_BG_span_2p0));
+end
+%}
+figure(1);
+hold on;
+scatter(new_x_2p0, new_y_2p0,'m');
+hold off;
+%% 2p8 BG
+
+fprintf('NEW INSTANCE \n');
+templowBG_2p8_target = 820;
+temphighBG_2p8_target = 1300;
+
+
+
+
+new_x_2p8_raw = new_fig5_2p8(:,1)'; 
+new_y_2p8_raw = new_fig5_2p8(:,2)'; 
+
+
+[~, templowBG_ind_2p8] = min(abs(new_x_2p8_raw-templowBG_2p8_target)); 
+new_templowBG_2p8 = new_x_2p8_raw(templowBG_ind_2p8);
+new_BG_pre_raw_2p8 = new_y_2p8_raw(1:templowBG_ind_2p8);
+new_BG_pre_2p8 = mean(new_BG_pre_raw_2p8);
+
+[~, temphighBG_ind_2p8] = min(abs(new_x_2p8_raw-temphighBG_2p8_target));
+new_temphighBG_2p8 = new_x_2p8_raw(temphighBG_ind_2p8);
+new_BG_post_raw_2p8 = new_y_2p8_raw(temphighBG_ind_2p8: length(new_y_2p8_raw));
+new_BG_post_2p8 = mean(new_BG_post_raw_2p8);
+
+new_BG_2p8 = @(x) new_BG_pre_2p8 + (x - new_templowBG_2p8) * ...
+    ((new_BG_post_2p8 - new_BG_pre_2p8) ...
+    /(new_temphighBG_2p8 - new_templowBG_2p8));
+
+new_BG_span_2p8 = linspace(new_templowBG_2p8 , new_temphighBG_2p8 ...
+    ,(temphighBG_ind_2p8 - templowBG_ind_2p8 + 1));
+
+
+
+
+new_x_2p8 = new_x_2p8_raw(templowBG_ind_2p8:temphighBG_ind_2p8);
+new_y_2p8 = new_y_2p8_raw(templowBG_ind_2p8 : temphighBG_ind_2p8) ...
+    -new_BG_2p8(new_BG_span_2p8);
+
+
+figure(1);
+
+hold on; 
+plot(new_x_2p8_raw, new_BG_pre_2p8 * ones(size(new_x_2p8_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_x_2p8_raw, new_BG_post_2p8 * ones(size(new_x_2p8_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_BG_span_2p8, new_BG_2p8(new_BG_span_2p8));
+plot(new_x_2p8_raw, new_y_2p8_raw);
+
+hold off;
+
+
+zerocutoff_2p8 = find(new_y_2p8 < 0 , 1 , 'last');
+if ~isempty(zerocutoff_2p8)
+new_y_2p8 = new_y_2p8(zerocutoff_2p8:  length(new_BG_span_2p8));
+new_x_2p8 = new_x_2p8(zerocutoff_2p8 : length(new_BG_span_2p8));
+end
+
+figure(1);
+hold on;
+scatter(new_x_2p8, new_y_2p8,'b');
+hold off;
+
+
+%% 4p0 BG
+
+fprintf('NEW INSTANCE \n');
+templowBG_4p0_target = 789;
+temphighBG_4p0_target = 1300;
+
+
+
+
+new_x_4p0_raw = new_fig5_4p0(:,1)'; 
+new_y_4p0_raw = new_fig5_4p0(:,2)'; 
+
+
+[~, templowBG_ind_4p0] = min(abs(new_x_4p0_raw-templowBG_4p0_target)); 
+new_templowBG_4p0 = new_x_4p0_raw(templowBG_ind_4p0);
+new_BG_pre_raw_4p0 = new_y_4p0_raw(1:templowBG_ind_4p0);
+new_BG_pre_4p0 = mean(new_BG_pre_raw_4p0);
+
+[~, temphighBG_ind_4p0] = min(abs(new_x_4p0_raw-temphighBG_4p0_target));
+new_temphighBG_4p0 = new_x_4p0_raw(temphighBG_ind_4p0);
+new_BG_post_raw_4p0 = new_y_4p0_raw(temphighBG_ind_4p0: length(new_y_4p0_raw));
+new_BG_post_4p0 = mean(new_BG_post_raw_4p0);
+
+new_BG_4p0 = @(x) new_BG_pre_4p0 + (x - new_templowBG_4p0) * ...
+    ((new_BG_post_4p0 - new_BG_pre_4p0) ...
+    /(new_temphighBG_4p0 - new_templowBG_4p0));
+
+new_BG_span_4p0 = linspace(new_templowBG_4p0 , new_temphighBG_4p0 ...
+    ,(temphighBG_ind_4p0 - templowBG_ind_4p0 + 1));
+
+
+
+
+new_x_4p0 = new_x_4p0_raw(templowBG_ind_4p0:temphighBG_ind_4p0);
+new_y_4p0 = new_y_4p0_raw(templowBG_ind_4p0 : temphighBG_ind_4p0) ...
+    -new_BG_4p0(new_BG_span_4p0);
+
+
+figure(1);
+
+hold on; 
+plot(new_x_4p0_raw, new_BG_pre_4p0 * ones(size(new_x_4p0_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_x_4p0_raw, new_BG_post_4p0 * ones(size(new_x_4p0_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_BG_span_4p0, new_BG_4p0(new_BG_span_4p0));
+plot(new_x_4p0_raw, new_y_4p0_raw);
+
+hold off;
+
+
+zerocutoff_1p2 = find(new_y_4p0 < 0 , 1 , 'last');
+if ~isempty(zerocutoff_1p2)
+new_y_4p0 = new_y_4p0(zerocutoff_1p2:  length(new_BG_span_4p0));
+new_x_4p0 = new_x_4p0(zerocutoff_1p2 : length(new_BG_span_4p0));
+end
+
+figure(1);
+hold on;
+scatter(new_x_4p0, new_y_4p0);
+hold off;
+
+
+
+%% 1p2 BG
+
+fprintf('NEW INSTANCE \n');
+templowBG_8p0_target = 628;
+temphighBG_8p0_target = 1300;
+
+
+
+
+new_x_8p0_raw = new_fig5_8p0(:,1)'; 
+new_y_8p0_raw = new_fig5_8p0(:,2)'; 
+
+
+[~, templowBG_ind_8p0] = min(abs(new_x_8p0_raw-templowBG_8p0_target)); 
+new_templowBG_8p0 = new_x_8p0_raw(templowBG_ind_8p0);
+new_BG_pre_raw_8p0 = new_y_8p0_raw(1:templowBG_ind_8p0);
+new_BG_pre_8p0 = mean(new_BG_pre_raw_8p0);
+
+[~, temphighBG_ind_8p0] = min(abs(new_x_8p0_raw-temphighBG_8p0_target));
+new_temphighBG_8p0 = new_x_8p0_raw(temphighBG_ind_8p0);
+new_BG_post_raw_8p0 = new_y_8p0_raw(temphighBG_ind_8p0: length(new_y_8p0_raw));
+new_BG_post_8p0 = mean(new_BG_post_raw_8p0);
+
+new_BG_8p0 = @(x) new_BG_pre_8p0 + (x - new_templowBG_8p0) * ...
+    ((new_BG_post_8p0 - new_BG_pre_8p0) ...
+    /(new_temphighBG_8p0 - new_templowBG_8p0));
+
+new_BG_span_8p0 = linspace(new_templowBG_8p0 , new_temphighBG_8p0 ...
+    ,(temphighBG_ind_8p0 - templowBG_ind_8p0 + 1));
+
+
+
+
+new_x_8p0 = new_x_8p0_raw(templowBG_ind_8p0:temphighBG_ind_8p0);
+new_y_8p0 = new_y_8p0_raw(templowBG_ind_8p0 : temphighBG_ind_8p0) ...
+    -new_BG_8p0(new_BG_span_8p0);
+
+
+figure(1);
+
+hold on; 
+plot(new_x_8p0_raw, new_BG_pre_8p0 * ones(size(new_x_8p0_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_x_8p0_raw, new_BG_post_8p0 * ones(size(new_x_8p0_raw)), ...
+    '--k', 'LineWidth', 1.5);
+plot(new_BG_span_8p0, new_BG_8p0(new_BG_span_8p0));
+plot(new_x_8p0_raw, new_y_8p0_raw);
+
+hold off;
+
+
+zerocutoff_8p0 = find(new_y_8p0 < 0 , 1 , 'last');
+if ~isempty(zerocutoff_8p0)
+new_y_8p0 = new_y_8p0(zerocutoff_8p0:  length(new_BG_span_8p0));
+new_x_8p0 = new_x_8p0(zerocutoff_8p0 : length(new_BG_span_8p0));
+end
+
+figure(1);
+hold on;
+scatter(new_x_8p0, new_y_8p0,'b');
+hold off;
