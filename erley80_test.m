@@ -154,6 +154,8 @@ hold off;
 
 arrh_x = [1/755.205, 1/755.225, 1/782.232];
 arrh_y = [log(0.02166/0.06),log(0.0108/0.06), log(0.032/0.06)];
+%And they're not linear at all. 
+
 %%
 p = polyfit(arrh_x, arrh_y, 1);
 
@@ -183,7 +185,6 @@ fprintf('Pre-exponential factor in s^-1 for 0.8 x 10^19 dosage \n = %.4e\n', exp
 fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actual: 7.3 +- 0.5 
 
 
-%And they're not linear at all. 
 
 %% 6/1 (PM) - The integral WRT time of the raw simulated signal (the desorption rate) is the initial coverage. The one WRT temperature isn't. 
 %The integral WRT temperature is exactly 8 times the actual coverage, with
@@ -236,11 +237,13 @@ arrh_y = [log(beta* 0.012/0.09),log(beta* 0.0186/0.09), log(beta*0.0232/0.09),lo
 
 
 %% 6/2 Testing out integration function. 
+Ns_01 = zeros(1,length(y_Pt_01));
+for i = 1:length(y_Pt_01)-1 %necessary to subtract by one for some reason but max() returns the initial coverage
+    Ns_01(i) = trapz(t_Pt_01(i:end),y_Pt_01(i:end));
 
-
-
-
-
+end
+%figure;
+%plot(t_Pt_01, y_Pt_01,'k', t_Pt_01, Ns_01,'o-'); Works. 
 
 %% 5/31 Transforming the signals to make them 'realistic', as in making their integrals proportional (not equal) to the initial coverage
 
@@ -254,20 +257,37 @@ s_Pt_030 = y_Pt_03 * signalboot;
 %5/29 - Signals must be normalized to 1; divide all of the signal by the
 %max value of the top initial coverage, in [the previous, Cox and Lambert] case the maximum of
 %new_y_8p0.
-[SIM_max_new_y_all , ~] = max(s_Pt_030); 
-[SIM_max_new_y_01, ~] = max(s_y)
+%6/2 Or not. 
+%[SIM_max_new_y_all , ~] = max(s_Pt_030); 
 fprintf('NEW INSTance \n');
 SB_Ns_01 = zeros(1,length(s_Pt_01));
 
-for i = 1:length(s_Pt_01)
-    SB_Ns_01(i) = trapz(s_Pt_01(i:end)); %gets the area underneath the curve past the signal (new_y) at index 'i'
+for i = 1:length(s_Pt_01) -1 
+    SB_Ns_01(i) = trapz(t_Pt_01(i:end) , s_Pt_01(i:end)); %gets the area underneath the curve past the signal (new_y) at index 'i'
 end
+%%
 
-[max_Ns_02, ~] = max(SB_Ns_01); %gets maximum of areas for below normalization 
-SB_Ns_01 = SB_Ns_01 * (N_01 / max_Ns_02); %trapz assumes a spacing of 1, so if the actual spacing is lower the reported area's going to be higher
+fprintf('NEW INSTance \n');
+
+[max_Ns_01, ~] = max(SB_Ns_01); %gets maximum of areas for below normalization 
+normed_SB_Ns_01 = SB_Ns_01 * (N_01 / max_Ns_01); %trapz assumes a spacing of 1, so if the actual spacing is lower the reported area's going to be higher
  %more on that, it makes the maximum for new_N_ (the first value)be equal to the initial coverage, N0_
+normed_s_Pt_01 = s_Pt_01 * (N_01/max_Ns_01);
+ %Works. 
+
+figure(5); clf;
+hold on;
+plot(t_Pt_01, y_Pt_01, 'k--','LineWidth',5); %Raw rate
+plot(t_Pt_01, c_Pt_01, 'k--', 'LineWidth',5); %Raw rate coverage 
+plot(t_Pt_01, s_Pt_01,'r', t_Pt_01, SB_Ns_01, 'r'); %Transformed raw rate and coverage
+plot(t_Pt_01, normed_s_Pt_01, 'm--', t_Pt_01, normed_SB_Ns_01, 'm--'); %Normalized transformed
+
+hold off;
+
+%Works.
 
 
+%%
 figure(5); clf; 
 hold on;
 %legend('0.4', '0.8', '1.2', '1.6', '2.0', '2.8', '4.0', '8.0');
