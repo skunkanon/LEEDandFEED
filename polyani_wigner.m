@@ -14,7 +14,7 @@ y_E = gam;
 %init_tmp = 70; %initial temperature
 %max_tmp = 1500;
 %ds_time = 20; %define desorption duration in seconds
-time_span = linspace(0,(max_tmp - init_tmp)/beta,1000); %array of times from start through whole duration
+time_span = linspace(0,(max_tmp - init_tmp)/beta,3000); %array of times from start through whole duration
 
 %temperature as function of time 
 tmp = @(t) beta*t + init_tmp; %function declaration
@@ -24,7 +24,9 @@ tmp_span = tmp(time_span); %independent variable for spectra spanning duration
 Ea = @(N) Ea_0 - N*y_E;
 
 %solve coverage differential equation 
-dNdt = @(t, N) -v * N * min(exp(-Ea(N) / (R * tmp(t))),2);
+%dNdt = @(t, N) -v * N * min(exp(-Ea(N) / (R * tmp(t))),2); %Adding min()
+%doesn't seem to do anything
+dNdt = @(t, N) -v * N * exp(-Ea(N) / (R * tmp(t)));
 
 options = odeset('RelTol', 1e-13, 'AbsTol', 1e-19); % Adjust tolerances
 [t, N] = ode15s(dNdt, time_span, N_0, options);

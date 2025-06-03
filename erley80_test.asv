@@ -195,13 +195,13 @@ fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actu
 %Last parameter on the polanyi_wigner() output is the coverage, from
 %solving the Madix equation. 'y' is its derivative. 
 init_K = 300; %Kelvin 
-pre_exp = 10^15; %s^-1 
-[t_Pt_01, x_Pt_01, y_Pt_01,c_Pt_01] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_01,1050); %Choosing 0.1 = N_0 as the starting value, same as Cox '81
-[t_Pt_015, x_Pt_015, y_Pt_015,c_Pt_015] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_015,1050);
-[t_Pt_02, x_Pt_02, y_Pt_02,c_Pt_02] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_02,1050);
-[t_Pt_025, x_Pt_025, y_Pt_025,c_Pt_025] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_025,1050);
-[t_Pt_03, x_Pt_03, y_Pt_03,c_Pt_03] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_03,1050);
-[t_Pt_035, x_Pt_035, y_Pt_035,c_Pt_035] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_035,1050);
+pre_exp = 10^14; %s^-1 
+[t_Pt_01, x_Pt_01, y_Pt_01,c_Pt_01] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_01,1050); %Choosing 0.1 = N_0 as the starting value, same as Cox '81
+[t_Pt_015, x_Pt_015, y_Pt_015,c_Pt_015] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_015,1050);
+[t_Pt_02, x_Pt_02, y_Pt_02,c_Pt_02] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_02,1050);
+[t_Pt_025, x_Pt_025, y_Pt_025,c_Pt_025] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_025,1050);
+[t_Pt_03, x_Pt_03, y_Pt_03,c_Pt_03] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_03,1050);
+[t_Pt_035, x_Pt_035, y_Pt_035,c_Pt_035] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_035,1050);
 
 figure(6); clf(6); 
 cmap = parula(6);
@@ -250,18 +250,7 @@ arrh_y = [log( beta * 0.012106936/ 0.05), log(beta * 0.018677 / 0.05 )];
 beta = 8 ;
 arrh_x = [ 1/temp(57.80) , 1/temp(59.1216), 1/temp(59.83), 1/temp(60.27)];
 arrh_y = [log( beta * 0.0121/ 0.05), log(beta * 0.018 / 0.05 ), log(beta * 0.0232/ 0.05) ,log(beta * 0.026799/ 0.05)];
-%Nothing changes.
 
-%% 6/3 - Raising pre-exponential to 10^14 to see if Arrhenius plot reflects that change well 
-
-
-arrh_x = [ 1/temp(51.611) , 1/temp(52.7676)];
-arrh_y = [log( beta * 0.0137/ 0.05), log(beta * 0.0213 / 0.05 )];
-%% 6/3 - Now 10^15
-
-
-arrh_x = [ 1/temp(46.17) , 1/temp(47.2032)];
-arrh_y = [log( beta * 0.01556/ 0.05), log(beta * 0.02416 / 0.05 )];
 
 %% 6/2 Testing out integration function. 
 Ns_01 = zeros(1,length(y_Pt_01));

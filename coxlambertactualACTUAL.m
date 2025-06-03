@@ -91,7 +91,7 @@ title('Dosage vs Coverage');
 legend('Original Data', 'Interpolated Original Data', 'Location', 'best');
 grid on;
 %% Now Arrhenius analysis, getting the areas to the right of each signal. 
-
+%6/2 - ignore this integration method this sucks now 
 
 N0_0p4 = 0.0908;
 N0_0p8 = 0.2004;
