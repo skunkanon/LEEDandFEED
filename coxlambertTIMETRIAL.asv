@@ -79,10 +79,10 @@ hold on;
 
 
 %Trying out 
-%[~] = getcoverageplotcoverage(time(tempSPAN_actual_0p4), signalSPAN_actual_0p4, N0_0p4,'k');
-%[N_test] = getcoverageplotcoverage(time(tempSPAN_actual_0p8), signalSPAN_actual_0p8, N0_0p8,'k');
-%[~] = getcoverageplotcoverage(time(tempSPAN_actual_1p2), signalSPAN_actual_1p2, N0_1p2,'k');
-%[~] = getcoverageplotcoverage(time(tempSPAN_actual_1p6), signalSPAN_actual_1p6, N0_1p6, 'k');
+[~] = getcoverageplotcoverage(time(tempSPAN_actual_0p4), signalSPAN_actual_0p4, N0_0p4,'k');
+[N_test] = getcoverageplotcoverage(time(tempSPAN_actual_0p8), signalSPAN_actual_0p8, N0_0p8,'k');
+[~] = getcoverageplotcoverage(time(tempSPAN_actual_1p2), signalSPAN_actual_1p2, N0_1p2,'k');
+[~] = getcoverageplotcoverage(time(tempSPAN_actual_1p6), signalSPAN_actual_1p6, N0_1p6, 'k');
 %[~] = getcoverageplotcoverage(time(tempSPAN_actual_2p0), signalSPAN_actual_2p0, N0_2p0, 'k');
 %[~] = getcoverageplotcoverage(time(tempSPAN_actual_2p8), signalSPAN_actual_2p8, N0_2p8, 'y');
 %[~] = getcoverageplotcoverage(time(tempSPAN_actual_4p0), signalSPAN_actual_4p0, N0_4p0, 'c');
