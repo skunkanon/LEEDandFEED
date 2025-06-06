@@ -68,7 +68,7 @@ y_test2 = [2, 2, 2, 2]; %Area should be  (0.3 * 2 = 0.6.)
 %% 6/1 - Plotting the derivative of the coverage curve, to see if it matches with the generated rate curve from 'polyani_wigner' 
 figure(3); clf;
 hold on;
-plot(x_Pt_01, Ns_01, 'o-'); 
+%plot(x_Pt_01, Ns_01, 'o-'); 
 plot(x_Pt_01, y_Pt_01);
 plot(x_Pt_01, c_Pt_01);
 hold off;
@@ -292,7 +292,7 @@ SB_Ns_01 = zeros(1,length(s_Pt_01));
 for i = 1:length(s_Pt_01) -1 
     SB_Ns_01(i) = trapz(t_Pt_01(i:end) , s_Pt_01(i:end)); %gets the area underneath the curve past the signal (new_y) at index 'i'
 end
-%%
+
 
 fprintf('NEW INSTance \n');
 
@@ -302,7 +302,7 @@ normed_SB_Ns_01 = SB_Ns_01 * (N_01 / max_Ns_01); %trapz assumes a spacing of 1, 
 normed_s_Pt_01 = s_Pt_01 * (N_01/max_Ns_01);
  %Works. 
 
-figure(5); clf;
+figure(5); 
 hold on;
 plot(t_Pt_01, y_Pt_01, 'k--','LineWidth',5); %Raw rate
 plot(t_Pt_01, c_Pt_01, 'k--', 'LineWidth',5); %Raw rate coverage 
