@@ -349,11 +349,8 @@ y_actual = y_span_focus_interp(ind_actual);
 
 %6/7 - Works. 
 
-%% 6/7 - Above code is useful for coverage plots, which just decrease. Rate curves have two candidates for X.   
+%% 6/7 - Test out new interpolation functions (focusXgetY, focusYgetX) on simulated data. May make the Arrhenius analysis its own function. 
 
-
-%% 6/7 - Test out new interpolation function on simulated data. May make the Arrhenius analysis its own function. 
-%Need t
 
 
 %% 3/19 - Make function that plots desorption and labels them nicely? Making desorption spectra 
