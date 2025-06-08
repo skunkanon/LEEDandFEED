@@ -14,7 +14,7 @@ end
 
 %fprintf('%.4f\n', avg_spacing);
 ind_range = round((tolerance/avg_spacing) / 2);
-fprintf('%.4f\n', ind_range);
+%fprintf('%.4f\n', ind_range);
 x_span_focus = x_span(ind_center - ind_range : ind_center + ind_range);
 y_span_focus =  y_span(ind_center - ind_range :  ind_center + ind_range);
 
@@ -42,3 +42,6 @@ y_actual = y_span_focus_interp(ind_actual);
 
 fprintf('%.4e\n', x_actual - x_point);
 end
+
+%Note 6/7. Could just get the index from focusYgetX and return the signal
+%curve at that index..? No, this is easier to keep track of as-is.

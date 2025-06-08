@@ -195,7 +195,7 @@ fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actu
 %Last parameter on the polanyi_wigner() output is the coverage, from
 %solving the Madix equation. 'y' is its derivative. 
 init_K = 300; %Kelvin 
-pre_exp = 10^15; %s^-1 
+pre_exp = 10^13; %s^-1 
 [t_Pt_01, x_Pt_01, y_Pt_01,c_Pt_01] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_01,1050); %Choosing 0.1 = N_0 as the starting value, same as Cox '81
 [t_Pt_015, x_Pt_015, y_Pt_015,c_Pt_015] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_015,1050);
 [t_Pt_02, x_Pt_02, y_Pt_02,c_Pt_02] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_02,1050);
@@ -215,6 +215,128 @@ plot(t_Pt_035, y_Pt_035,t_Pt_035, c_Pt_035, 'Color', cmap(6,:));
 legend('0.1', '0.15','0.2', '0.25', '0.3', '0.35');
 hold off;
  
+%% 5/31 Transforming the signals to make them 'realistic', as in making their integrals proportional (not equal) to the initial coverage
+
+signalboot = 1.4;
+s_Pt_01 = y_Pt_01 * signalboot; 
+s_Pt_015 = y_Pt_015 * signalboot; 
+s_Pt_02 = y_Pt_02 * signalboot; 
+s_Pt_025 = y_Pt_025 * signalboot; 
+s_Pt_030 = y_Pt_03 * signalboot; 
+%% 5/31 - Now integrating with code from 'coxlambertactualACTUAL' 
+%5/29 - Signals must be normalized to 1; divide all of the signal by the
+%max value of the top initial coverage, in [the previous, Cox and Lambert] case the maximum of
+%new_y_8p0.
+%6/2 Or not. 
+%[SIM_max_new_y_all , ~] = max(s_Pt_030); 
+fprintf('NEW INSTance \n');
+SB_Ns_01 = zeros(1,length(s_Pt_01));
+
+for i = 1:length(s_Pt_01) -1 
+    SB_Ns_01(i) = trapz(t_Pt_01(i:end) , s_Pt_01(i:end)); %gets the area underneath the curve past the signal (new_y) at index 'i'
+end
+
+
+fprintf('NEW INSTance \n');
+
+[max_Ns_01, ~] = max(SB_Ns_01); %gets maximum of areas for below normalization 
+normed_SB_Ns_01 = SB_Ns_01 * (N_01 / max_Ns_01); %trapz assumes a spacing of 1, so if the actual spacing is lower the reported area's going to be higher
+ %more on that, it makes the maximum for new_N_ (the first value)be equal to the initial coverage, N0_
+normed_s_Pt_01 = s_Pt_01 * (N_01/max_Ns_01);
+ %Works. 
+
+figure(5); 
+hold on;
+plot(t_Pt_01, y_Pt_01, 'k--','LineWidth',5); %Raw rate
+plot(t_Pt_01, c_Pt_01, 'k--', 'LineWidth',5); %Raw rate coverage 
+plot(t_Pt_01, s_Pt_01,'r', t_Pt_01, SB_Ns_01, 'r'); %Transformed raw rate and coverage
+plot(t_Pt_01, normed_s_Pt_01, 'm--', t_Pt_01, normed_SB_Ns_01, 'm--'); %Normalized transformed
+
+hold off;
+
+%Works.
+
+
+
+%% 6/7 - Test out new interpolation functions (focusXgetY, focusYgetX) on simulated data. May make the Arrhenius analysis its own function. 
+
+coverage_desired = 0.0999;
+[time_01, coverage_01] = getpointgetinterpolation_focusYgetX(t_Pt_01, c_Pt_01, coverage_desired, 0.0002); %point #1
+[time_01_focusXgetY, rate_01] = getpointgetinterpolation_focusXgetY(t_Pt_01,y_Pt_01, time_01, 0.0002);
+%6/7- Works.
+
+[time_015, coverage_015] = getpointgetinterpolation_focusYgetX(t_Pt_015, c_Pt_015, coverage_desired, 0.0002); %point #2
+[time_015_focusXgetY, rate_015] = getpointgetinterpolation_focusXgetY(t_Pt_015,y_Pt_015, time_015, 0.0002);
+[time_02, coverage_02] = getpointgetinterpolation_focusYgetX(t_Pt_02, c_Pt_02, coverage_desired, 0.0002); %point #3
+[time_02_focusXgetY, rate_02] = getpointgetinterpolation_focusXgetY(t_Pt_02,y_Pt_02, time_02, 0.0002);
+[time_025, coverage_025] = getpointgetinterpolation_focusYgetX(t_Pt_025, c_Pt_025, coverage_desired, 0.0002); %point #4
+[time_025_focusXgetY, rate_025] = getpointgetinterpolation_focusXgetY(t_Pt_025,y_Pt_025, time_025, 0.0002);
+[time_03, coverage_03] = getpointgetinterpolation_focusYgetX(t_Pt_03, c_Pt_03, coverage_desired, 0.0002); %point #5
+[time_03_focusXgetY, rate_03] = getpointgetinterpolation_focusXgetY(t_Pt_03,y_Pt_03, time_03, 0.0002);
+
+
+
+%Arrhenius analysis
+beta = 8; %K/s 
+temp = @(t) beta*t + init_K; 
+arrh_x = [1/temp(time_01), 1/temp(time_015), 1/temp(time_02), 1/temp(time_025), 1/temp(time_03)];
+beta = 1;
+arrh_y = [log(beta * rate_01 / coverage_01), log(beta* rate_015 / coverage_015), log(beta * rate_02 / coverage_02),...
+    log(beta * rate_025 / coverage_025), log(beta*rate_03 / coverage_03)];
+p = polyfit(arrh_x, arrh_y, 1);
+% Extract slope and intercept
+slope = p(1);
+intercept = p(2);
+
+% Generate fit line
+x_fit = linspace(min(arrh_x), max(arrh_x), 100);
+y_fit = polyval(p, x_fit);
+
+% Plot
+figure(4); clf;
+scatter(arrh_x * 10^3, arrh_y, 'filled');
+hold on;
+plot(x_fit * 10^3, y_fit, 'r-', 'LineWidth', 1);
+xlabel('1/T (1/K)  *10^3');
+ylabel('ln(beta * f /s)');
+title('Arrhenius Plot');
+grid on;
+legend('Data', 'Linear Fit');
+set(gca, 'YDir','reverse')
+% Display the equation
+fprintf('Fit equation: ln(beta * f/s) = %.4f*(1/T) + %.4f\n', slope, intercept); 
+fprintf('Ea in kcal/mol', slope*(-8.314)/1000); % Actual: 160 +- 20 kJ
+fprintf('Pre-exponential factor in s^-1 for 0.8 x 10^19 dosage \n = %.4e\n', exp(intercept));% Actual: 2 x 10^7 s^-1
+fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actual: 7.3 +- 0.5 
+
+
+
+
+%% 3/19 - Make function that plots desorption and labels them nicely? Making desorption spectra 
+
+
+
+
+% as cells, not linear arrays
+x_Erley = cell(1,2);
+y_Erley = cell(1,2);
+
+[~,x_Erley{1}, y_Erley{1}] = polyani_wigner(8,550, Ea_Pd * kcal_to_J,0,10^13,0.03,1050);
+[~,x_Erley{2}, y_Erley{2}] = polyani_wigner(8,550, Ea_Pt * kcal_to_J,0,10^13,0.01,1050);
+
+
+
+
+%% Testing out the plot() function 
+
+
+labels = ["Saturated Pd (111)", "Saturated Pt (111)"];
+tight = 'Cl Desorption at 8 K/s';
+
+
+polyani_plot(x_Erley,y_Erley, labels, tight);
+
+%{
 %% 6/2 - Run this through above section 
 %0.09 Coverage 
 beta = 8; %K/s 
@@ -272,47 +394,6 @@ end
 %figure;
 %plot(t_Pt_01, y_Pt_01,'k', t_Pt_01, Ns_01,'o-'); Works. 
 
-%% 5/31 Transforming the signals to make them 'realistic', as in making their integrals proportional (not equal) to the initial coverage
-
-signalboot = 1.4;
-s_Pt_01 = y_Pt_01 * signalboot; 
-s_Pt_015 = y_Pt_015 * signalboot; 
-s_Pt_02 = y_Pt_02 * signalboot; 
-s_Pt_025 = y_Pt_025 * signalboot; 
-s_Pt_030 = y_Pt_03 * signalboot; 
-%% 5/31 - Now integrating with code from 'coxlambertactualACTUAL' 
-%5/29 - Signals must be normalized to 1; divide all of the signal by the
-%max value of the top initial coverage, in [the previous, Cox and Lambert] case the maximum of
-%new_y_8p0.
-%6/2 Or not. 
-%[SIM_max_new_y_all , ~] = max(s_Pt_030); 
-fprintf('NEW INSTance \n');
-SB_Ns_01 = zeros(1,length(s_Pt_01));
-
-for i = 1:length(s_Pt_01) -1 
-    SB_Ns_01(i) = trapz(t_Pt_01(i:end) , s_Pt_01(i:end)); %gets the area underneath the curve past the signal (new_y) at index 'i'
-end
-
-
-fprintf('NEW INSTance \n');
-
-[max_Ns_01, ~] = max(SB_Ns_01); %gets maximum of areas for below normalization 
-normed_SB_Ns_01 = SB_Ns_01 * (N_01 / max_Ns_01); %trapz assumes a spacing of 1, so if the actual spacing is lower the reported area's going to be higher
- %more on that, it makes the maximum for new_N_ (the first value)be equal to the initial coverage, N0_
-normed_s_Pt_01 = s_Pt_01 * (N_01/max_Ns_01);
- %Works. 
-
-figure(5); 
-hold on;
-plot(t_Pt_01, y_Pt_01, 'k--','LineWidth',5); %Raw rate
-plot(t_Pt_01, c_Pt_01, 'k--', 'LineWidth',5); %Raw rate coverage 
-plot(t_Pt_01, s_Pt_01,'r', t_Pt_01, SB_Ns_01, 'r'); %Transformed raw rate and coverage
-plot(t_Pt_01, normed_s_Pt_01, 'm--', t_Pt_01, normed_SB_Ns_01, 'm--'); %Normalized transformed
-
-hold off;
-
-%Works.
-
 
 %% 6/7 - Interpolation scheme test
 
@@ -330,7 +411,7 @@ y_span_focus =  y_span(ind_center - ind_range :  ind_center + ind_range);
 
 figure(7); clf;
 hold on;
-plot(x_span(ind_center - ind_range : ind_center + ind_range) , y_span(ind_center - ind_range :  ind_center + ind_range), 'b--','LineWidth',2);
+plot(x_span(ind_center - ind_range : ind_center + ind_range) , y_span(ind_center - ind_range :  ind_center + ind_range), 'b--','LineWidth',3);
 hold off;
 
 
@@ -339,57 +420,13 @@ y_span_focus_interp = interp1(x_span_focus,y_span_focus, x_span_focus_interp, 'p
 
 figure(7);
 hold on;
-plot(x_span_focus_interp, y_span_focus_interp, 'r');
+plot(x_span_focus_interp, y_span_focus_interp, 'r','LineWidth',2);
+plot(x_span, y_span, 'k--')
 hold off;
 
 [~,ind_actual] = min(abs(y_span_focus_interp -desired_y));
-x_actual = 
+x_actual = x_span_focus_interp(ind_actual);
+y_actual = y_span_focus_interp(ind_actual);
 
-%% 3/19 - Make function that plots desorption and labels them nicely? Making desorption spectra 
-
-p = polyfit(arrh_x, arrh_y, 1);
-% Extract slope and intercept
-slope = p(1);
-intercept = p(2);
-% Generate fit line
-x_fit = linspace(min(arrh_x), max(arrh_x), 100);
-y_fit = polyval(p, x_fit);
-% Plot
-figure(4); clf;
-scatter(arrh_x * 10^3, arrh_y, 'filled');
-hold on;
-plot(x_fit * 10^3, y_fit, 'r-', 'LineWidth', 1);
-xlabel('1/T (1/K)  *10^3');
-ylabel('ln(beta * f /s)');
-title('Arrhenius Plot');
-grid on;
-legend('Data', 'Linear Fit');
-set(gca, 'YDir','reverse')
-% Display the equation
-fprintf('Fit equation: ln(beta * f/s) = %.4f*(1/T) + %.4f\n', slope, intercept); 
-fprintf('Ea in kJ/mol for 0.8 x 10^19 dosage \n = %.4f\n', slope*(-8.314)/1000); % Actual: 160 +- 20 kJ
-fprintf('Pre-exponential factor in s^-1 for 0.8 x 10^19 dosage \n = %.4e\n', exp(intercept));% Actual: 2 x 10^7 s^-1
-fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actual: 7.3 +- 0.5
-
-
-
-
-% as cells, not linear arrays
-x_Erley = cell(1,2);
-y_Erley = cell(1,2);
-
-[~,x_Erley{1}, y_Erley{1}] = polyani_wigner(8,550, Ea_Pd * kcal_to_J,0,10^13,0.03,1050);
-[~,x_Erley{2}, y_Erley{2}] = polyani_wigner(8,550, Ea_Pt * kcal_to_J,0,10^13,0.01,1050);
-
-
-
-
-%% Testing out the plot() function 
-
-
-labels = ["Saturated Pd (111)", "Saturated Pt (111)"];
-tight = 'Cl Desorption at 8 K/s';
-
-
-polyani_plot(x_Erley,y_Erley, labels, tight);
-
+%6/7 - Works. 
+%}
