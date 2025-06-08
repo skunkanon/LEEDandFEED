@@ -314,9 +314,53 @@ hold off;
 %Works.
 
 
+%% 6/7 - Interpolation scheme test
+
+x_span = t_Pt_01(:).';
+y_span = c_Pt_01(:).';
+desired_y = 0.05;
+
+[~,ind_center] = min(abs(y_span - desired_y));
+tolerance = 0.5;
+avg_spacing = abs(x_span(1) - x_span(end)) / size(x_span,2);
+ind_range = round(tolerance/avg_spacing) / 2;
+x_span_focus = x_span(ind_center - ind_range : ind_center + ind_range);
+y_span_focus =  y_span(ind_center - ind_range :  ind_center + ind_range);
+
+
+figure(7); clf;
+hold on;
+plot(x_span(ind_center - ind_range : ind_center + ind_range) , y_span(ind_center - ind_range :  ind_center + ind_range), 'b--','LineWidth',3);
+hold off;
+
+
+x_span_focus_interp = linspace(min(x_span_focus), max(x_span_focus),2000);
+y_span_focus_interp = interp1(x_span_focus,y_span_focus, x_span_focus_interp, 'pchip');
+
+figure(7);
+hold on;
+plot(x_span_focus_interp, y_span_focus_interp, 'r','LineWidth',2);
+plot(x_span, y_span, 'k--')
+hold off;
+
+[~,ind_actual] = min(abs(y_span_focus_interp -desired_y));
+x_actual = x_span_focus_interp(ind_actual);
+y_actual = y_span_focus_interp(ind_actual);
+
+%6/7 - Works. 
+
+%% 6/7 - Above code is useful for coverage plots, which just decrease. Rate curves have two candidates for X.   
+
+
+%% 6/7 - Test out new interpolation function on simulated data. May make the Arrhenius analysis its own function. 
+%Need t
 
 
 %% 3/19 - Make function that plots desorption and labels them nicely? Making desorption spectra 
+
+
+
+
 % as cells, not linear arrays
 x_Erley = cell(1,2);
 y_Erley = cell(1,2);

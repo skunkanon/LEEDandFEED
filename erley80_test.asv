@@ -68,7 +68,7 @@ y_test2 = [2, 2, 2, 2]; %Area should be  (0.3 * 2 = 0.6.)
 %% 6/1 - Plotting the derivative of the coverage curve, to see if it matches with the generated rate curve from 'polyani_wigner' 
 figure(3); clf;
 hold on;
-plot(x_Pt_01, Ns_01, 'o-'); 
+%plot(x_Pt_01, Ns_01, 'o-'); 
 plot(x_Pt_01, y_Pt_01);
 plot(x_Pt_01, c_Pt_01);
 hold off;
@@ -195,13 +195,13 @@ fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actu
 %Last parameter on the polanyi_wigner() output is the coverage, from
 %solving the Madix equation. 'y' is its derivative. 
 init_K = 300; %Kelvin 
-pre_exp = 10^14; %s^-1 
-[t_Pt_01, x_Pt_01, y_Pt_01,c_Pt_01] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_01,1050); %Choosing 0.1 = N_0 as the starting value, same as Cox '81
-[t_Pt_015, x_Pt_015, y_Pt_015,c_Pt_015] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_015,1050);
-[t_Pt_02, x_Pt_02, y_Pt_02,c_Pt_02] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_02,1050);
-[t_Pt_025, x_Pt_025, y_Pt_025,c_Pt_025] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_025,1050);
-[t_Pt_03, x_Pt_03, y_Pt_03,c_Pt_03] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_03,1050);
-[t_Pt_035, x_Pt_035, y_Pt_035,c_Pt_035] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,10^13,N_035,1050);
+pre_exp = 10^15; %s^-1 
+[t_Pt_01, x_Pt_01, y_Pt_01,c_Pt_01] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_01,1050); %Choosing 0.1 = N_0 as the starting value, same as Cox '81
+[t_Pt_015, x_Pt_015, y_Pt_015,c_Pt_015] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_015,1050);
+[t_Pt_02, x_Pt_02, y_Pt_02,c_Pt_02] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_02,1050);
+[t_Pt_025, x_Pt_025, y_Pt_025,c_Pt_025] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_025,1050);
+[t_Pt_03, x_Pt_03, y_Pt_03,c_Pt_03] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_03,1050);
+[t_Pt_035, x_Pt_035, y_Pt_035,c_Pt_035] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_035,1050);
 
 figure(6); clf(6); 
 cmap = parula(6);
@@ -250,7 +250,18 @@ arrh_y = [log( beta * 0.012106936/ 0.05), log(beta * 0.018677 / 0.05 )];
 beta = 8 ;
 arrh_x = [ 1/temp(57.80) , 1/temp(59.1216), 1/temp(59.83), 1/temp(60.27)];
 arrh_y = [log( beta * 0.0121/ 0.05), log(beta * 0.018 / 0.05 ), log(beta * 0.0232/ 0.05) ,log(beta * 0.026799/ 0.05)];
+%Nothing changes.
 
+%% 6/3 - Raising pre-exponential to 10^14 to see if Arrhenius plot reflects that change well 
+
+
+arrh_x = [ 1/temp(51.611) , 1/temp(52.7676)];
+arrh_y = [log( beta * 0.0137/ 0.05), log(beta * 0.0213 / 0.05 )];
+%% 6/3 - Now 10^15
+
+
+arrh_x = [ 1/temp(46.17) , 1/temp(47.2032)];
+arrh_y = [log( beta * 0.01556/ 0.05), log(beta * 0.02416 / 0.05 )];
 
 %% 6/2 Testing out integration function. 
 Ns_01 = zeros(1,length(y_Pt_01));
@@ -281,7 +292,7 @@ SB_Ns_01 = zeros(1,length(s_Pt_01));
 for i = 1:length(s_Pt_01) -1 
     SB_Ns_01(i) = trapz(t_Pt_01(i:end) , s_Pt_01(i:end)); %gets the area underneath the curve past the signal (new_y) at index 'i'
 end
-%%
+
 
 fprintf('NEW INSTance \n');
 
@@ -291,7 +302,7 @@ normed_SB_Ns_01 = SB_Ns_01 * (N_01 / max_Ns_01); %trapz assumes a spacing of 1, 
 normed_s_Pt_01 = s_Pt_01 * (N_01/max_Ns_01);
  %Works. 
 
-figure(5); clf;
+figure(5); 
 hold on;
 plot(t_Pt_01, y_Pt_01, 'k--','LineWidth',5); %Raw rate
 plot(t_Pt_01, c_Pt_01, 'k--', 'LineWidth',5); %Raw rate coverage 
@@ -303,9 +314,66 @@ hold off;
 %Works.
 
 
+%% 6/7 - Interpolation scheme test
 
+x_span = t_Pt_01(:).';
+y_span = c_Pt_01(:).';
+desired_y = 0.05;
+
+[~,ind_center] = min(abs(y_span - desired_y));
+tolerance = 0.5;
+avg_spacing = abs(x_span(1) - x_span(end)) / size(x_span,2);
+ind_range = round(tolerance/avg_spacing) / 2;
+x_span_focus = x_span(ind_center - ind_range : ind_center + ind_range);
+y_span_focus =  y_span(ind_center - ind_range :  ind_center + ind_range);
+
+
+figure(7); clf;
+hold on;
+plot(x_span(ind_center - ind_range : ind_center + ind_range) , y_span(ind_center - ind_range :  ind_center + ind_range), 'b--','LineWidth',2);
+hold off;
+
+
+x_span_focus_interp = linspace(min(x_span_focus), max(x_span_focus),2000);
+y_span_focus_interp = interp1(x_span_focus,y_span_focus, x_span_focus_interp, 'pchip');
+
+figure(7);
+hold on;
+plot(x_span_focus_interp, y_span_focus_interp, 'r');
+hold off;
+
+[~,ind_actual] = min(abs(y_span_focus_interp -desired_y));
+x_actual = 
 
 %% 3/19 - Make function that plots desorption and labels them nicely? Making desorption spectra 
+
+p = polyfit(arrh_x, arrh_y, 1);
+% Extract slope and intercept
+slope = p(1);
+intercept = p(2);
+% Generate fit line
+x_fit = linspace(min(arrh_x), max(arrh_x), 100);
+y_fit = polyval(p, x_fit);
+% Plot
+figure(4); clf;
+scatter(arrh_x * 10^3, arrh_y, 'filled');
+hold on;
+plot(x_fit * 10^3, y_fit, 'r-', 'LineWidth', 1);
+xlabel('1/T (1/K)  *10^3');
+ylabel('ln(beta * f /s)');
+title('Arrhenius Plot');
+grid on;
+legend('Data', 'Linear Fit');
+set(gca, 'YDir','reverse')
+% Display the equation
+fprintf('Fit equation: ln(beta * f/s) = %.4f*(1/T) + %.4f\n', slope, intercept); 
+fprintf('Ea in kJ/mol for 0.8 x 10^19 dosage \n = %.4f\n', slope*(-8.314)/1000); % Actual: 160 +- 20 kJ
+fprintf('Pre-exponential factor in s^-1 for 0.8 x 10^19 dosage \n = %.4e\n', exp(intercept));% Actual: 2 x 10^7 s^-1
+fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actual: 7.3 +- 0.5
+
+
+
+
 % as cells, not linear arrays
 x_Erley = cell(1,2);
 y_Erley = cell(1,2);
