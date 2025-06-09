@@ -195,7 +195,9 @@ fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actu
 %Last parameter on the polanyi_wigner() output is the coverage, from
 %solving the Madix equation. 'y' is its derivative. 
 init_K = 300; %Kelvin 
-pre_exp = 10^13; %s^-1 
+pre_exp = 10^15; %s^-1 
+Ea_Pt = 67.5; %kcal/mol
+
 [t_Pt_01, x_Pt_01, y_Pt_01,c_Pt_01] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_01,1050); %Choosing 0.1 = N_0 as the starting value, same as Cox '81
 [t_Pt_015, x_Pt_015, y_Pt_015,c_Pt_015] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_015,1050);
 [t_Pt_02, x_Pt_02, y_Pt_02,c_Pt_02] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_02,1050);
@@ -305,12 +307,14 @@ legend('Data', 'Linear Fit');
 set(gca, 'YDir','reverse')
 % Display the equation
 fprintf('Fit equation: ln(beta * f/s) = %.4f*(1/T) + %.4f\n', slope, intercept); 
-fprintf('Ea in kJ/mol', slope*(-8.314)/1000); % Actual: 160 +- 20 kJ
-fprintf('Pre-exponential factor in s^-1 \n = %.4e\n', exp(intercept));% Actual: 2 x 10^7 s^-1
-fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actual: 7.3 +- 0.5 
+fprintf('Ea in kcal/mol  \n = %.10f\n', (1/kcal_to_J)*slope*(-8.314)); % Actual: 160 +- 20 kJ
+fprintf('Pre-exponential factor in s^-1 \n = %.10e\n', exp(intercept));% Actual: 2 x 10^7 s^-1
+fprintf('Log10() of pre-exponential \n = %.10e\n', log10(exp(intercept))); % Actual: 7.3 +- 0.5 
 
 
 
+
+%% 6/8 - Now testing a linear energy-coverage dependence. 
 
 
 
