@@ -30,9 +30,9 @@ new_BG_span = linspace(new_templowBG , new_temphighBG ...
 
 temperature_span = new_x_raw(templowBG_ind:temphighBG);
 signal_span = new_y_raw(templowBG_ind : temphighBG) - new_BG(new_BG_span);
-
+fprintf('%.4f\n' , trapz(signal_span, temperature_span));
 plot(x_raw, new_BG_pre * ones(size(x_raw)), 'k--');
-plot(x_raw, new_BG_post * ones(size(x_raw)), color, 'LineStyle','--');
+plot(x_raw, new_BG_post * ones(size(x_raw)), 'k--');
 plot(new_BG_span, new_BG(new_BG_span), color);
 plot(x_raw, y_raw, color);
 plot(temperature_span, signal_span, color, 'LineWidth',2);

@@ -1,4 +1,4 @@
-function [coverage_span_actual] = getcoverageplotcoverage(time_span, signal_span, N0, color)
+function [rate_span, coverage_span_actual] = getcoverageplotcoverage(time_span, signal_span, N0, color)
 
 
 coverage_span_raw = zeros(1,length(time_span));

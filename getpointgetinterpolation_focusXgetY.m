@@ -18,24 +18,24 @@ ind_range = round((tolerance/avg_spacing) / 2);
 x_span_focus = x_span(ind_center - ind_range : ind_center + ind_range);
 y_span_focus =  y_span(ind_center - ind_range :  ind_center + ind_range);
 
-%{
+
 figure(7); clf;
 hold on;
 plot(x_span(ind_center - ind_range : ind_center + ind_range) , y_span(ind_center - ind_range :  ind_center + ind_range), 'b--','LineWidth',3);
 hold off;
-%}
+
 
 x_span_focus_interp = linspace(min(x_span_focus), max(x_span_focus),2000); 
 
 
 y_span_focus_interp = interp1(x_span_focus,y_span_focus, x_span_focus_interp, 'pchip');
-%{
+
 figure(7);
 hold on;
 plot(x_span_focus_interp, y_span_focus_interp, 'r','LineWidth',2);
 plot(x_span, y_span, 'k--')
 hold off;
-%}
+
 [~,ind_actual] = min(abs(x_span_focus_interp - desired_x));
 x_actual = x_span_focus_interp(ind_actual);
 y_actual = y_span_focus_interp(ind_actual);

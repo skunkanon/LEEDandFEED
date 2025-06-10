@@ -39,7 +39,7 @@ end
 
 figure(3); clf
 hold on;
-[tempSPAN_actual_0p4 , signalSPAN_actual_0p4] = reduceBGgetspectra(new_x_0p4_raw, new_y_0p4_raw,950,1400,'r');
+[tempSPAN_actual_0p4 , signalSPAN_actual_0p4] = reduceBGgetspectra(new_x_0p4_raw, new_y_0p4_raw,970,1400,'r');
 [tempSPAN_actual_0p8 , signalSPAN_actual_0p8] = reduceBGgetspectra(new_x_0p8_raw, new_y_0p8_raw,900,1400,'g');
 [tempSPAN_actual_1p2 , signalSPAN_actual_1p2] = reduceBGgetspectra(new_x_1p2_raw, new_y_1p2_raw,888,1412,'b');
 [tempSPAN_actual_1p6 , signalSPAN_actual_1p6] = reduceBGgetspectra(new_x_1p6_raw, new_y_1p6_raw,876,1424,'m');
@@ -72,33 +72,51 @@ N0_8p0 = 0.49657;
 
 figure(2); clf;
 hold on;
-[~] = getcoverageplotcoverage(time(tempSPAN_actual_0p4), signalSPAN_actual_0p4, N0_0p4,'r');
-[N_test] = getcoverageplotcoverage(time(tempSPAN_actual_0p8), signalSPAN_actual_0p8, N0_0p8,'g');
-[~] = getcoverageplotcoverage(time(tempSPAN_actual_1p2), signalSPAN_actual_1p2, N0_1p2,'b');
-[~] = getcoverageplotcoverage(time(tempSPAN_actual_1p6), signalSPAN_actual_1p6, N0_1p6, 'm');
+[~,~] = getcoverageplotcoverage(time(tempSPAN_actual_0p4), signalSPAN_actual_0p4, N0_0p4,'r');
+[dNdt_0p8, N_0p8] = getcoverageplotcoverage(time(tempSPAN_actual_0p8), signalSPAN_actual_0p8, N0_0p8,'g');
+[dNdt_1p2, N_1p2] = getcoverageplotcoverage(time(tempSPAN_actual_1p2), signalSPAN_actual_1p2, N0_1p2,'b');
+[dNdt_1p6, N_1p6] = getcoverageplotcoverage(time(tempSPAN_actual_1p6), signalSPAN_actual_1p6, N0_1p6, 'm');
 
-
-%Trying out 
-%[~] = getcoverageplotcoverage(time(tempSPAN_actual_0p4), signalSPAN_actual_0p4, N0_0p4,'k');
-%[N_test] = getcoverageplotcoverage(time(tempSPAN_actual_0p8), signalSPAN_actual_0p8, N0_0p8,'k');
-%[~] = getcoverageplotcoverage(time(tempSPAN_actual_1p2), signalSPAN_actual_1p2, N0_1p2,'k');
-%[~] = getcoverageplotcoverage(time(tempSPAN_actual_1p6), signalSPAN_actual_1p6, N0_1p6, 'k');
-%[~] = getcoverageplotcoverage(time(tempSPAN_actual_2p0), signalSPAN_actual_2p0, N0_2p0, 'k');
-%[~] = getcoverageplotcoverage(time(tempSPAN_actual_2p8), signalSPAN_actual_2p8, N0_2p8, 'y');
-%[~] = getcoverageplotcoverage(time(tempSPAN_actual_4p0), signalSPAN_actual_4p0, N0_4p0, 'c');
-%[~] = getcoverageplotcoverage(time(tempSPAN_actual_8p0), signalSPAN_actual_8p0, N0_8p0, 'r');
-
-%set(gca, 'ColorOrder', cmap, 'NextPlot', 'replacechildren');
 
 hold off;
+%% Using new functions to get more accurate values for time, signal, and coverage. 6/9. 
+
+CL_theta = 0.15; 
+temp_init = 300; %K 
+beta = 50; %K/s
+time = @(x) (x-temp_init)/beta;
+[CL_time_0p8, coverage_0p8_theta_0p15] = getpointgetinterpolation_focusYgetX(time(tempSPAN_actual_0p8), N_0p8, CL_theta, 2);
+[~, rate_0p8_theta_0p15] = getpointgetinterpolation_focusXgetY(time(tempSPAN_actual_0p8), dNdt_0p8, CL_time_0p8, 2);
+
+[CL_time_1p2, coverage_1p2_theta_0p15] = getpointgetinterpolation_focusYgetX(time(tempSPAN_actual_1p2), N_1p2, CL_theta, 2);
+[~, rate_1p2_theta_0p15] = getpointgetinterpolation_focusXgetY(time(tempSPAN_actual_1p2),dNdt_1p2, CL_time_1p2, 2);
+
+
+[CL_time_1p6, coverage_1p6_theta_0p15] = getpointgetinterpolation_focusYgetX(time(tempSPAN_actual_1p6), N_1p6, CL_theta, 2);
+[~, rate_1p6_theta_0p15] = getpointgetinterpolation_focusXgetY(time(tempSPAN_actual_1p6), dNdt_1p6, CL_time_1p6, 2);
+%%
 
 %% Arrhenius analysis. Still have to fill in the values manually. 6/4
 
 temp = @(t) beta*t + temp_init;
-arrh_x = [1/temp(17.428), 1/temp(17.642)];
-arrh_y = [log(beta * 0.246 /0.4567), log(beta * 0.285 / 0.4566)];
+
+arrh_x = [1/temp(CL_time_0p8), 1/temp(CL_time_1p2), 1/temp(CL_time_1p6)];
+%beta = 1;
+arrh_y = [log(1 * rate_0p8_theta_0p15 / coverage_0p8_theta_0p15), log(1 * rate_1p2_theta_0p15 / coverage_1p2_theta_0p15) ...
+    log(1 * rate_1p6_theta_0p15 / coverage_1p6_theta_0p15)];
 
 %%
+
+
+%{
+arrh_x = [ 1/temp(CL_time_1p2), 1/temp(CL_time_1p6)];
+%beta = 1;
+arrh_y = [log(1 * rate_1p2_theta_0p15 / 0.2) ...
+    log(1 * rate_1p6_theta_0p15 / 0.2)];
+%}
+
+
+
 p = polyfit(arrh_x, arrh_y, 1);
 % Extract slope and intercept
 slope = p(1);
@@ -185,3 +203,100 @@ clear arrh_x_test;
 clear arrh_y_test;
 
 %}
+
+%% 6/9 - Cleaning up with new functions. Should all run as one section. Works.
+%Scanning raw scanned data
+new_x_0p8_raw = new_fig5_0p8(:,1)'; 
+new_y_0p8_raw = new_fig5_0p8(:,2)'; 
+new_x_1p2_raw = new_fig5_1p2(:,1)'; 
+new_y_1p2_raw = new_fig5_1p2(:,2)'; 
+new_x_1p6_raw = new_fig5_1p6(:,1)'; 
+new_y_1p6_raw = new_fig5_1p6(:,2)'; 
+
+%Background reduction
+figure(1); clf;
+hold on;
+[tempSPAN_actual_0p8 , signalSPAN_actual_0p8] = reduceBGgetspectra(new_x_0p8_raw, new_y_0p8_raw,750,1450,'g');
+[tempSPAN_actual_1p2 , signalSPAN_actual_1p2] = reduceBGgetspectra(new_x_1p2_raw, new_y_1p2_raw,750,1450,'b');
+[tempSPAN_actual_1p6 , signalSPAN_actual_1p6] = reduceBGgetspectra(new_x_1p6_raw, new_y_1p6_raw,750,1450,'m');
+hold off;
+
+%Initial coverages, from LEED data
+N0_0p8 = 0.2004;
+N0_1p2 = 0.2877;
+N0_1p6 = 0.3856; 
+
+%Getting rates and coverage from the signal
+temp_init = 300; %K 
+beta = 50; %K/s
+time = @(x) (x-temp_init)/beta;
+figure(2); clf;
+hold on;
+[dNdt_0p8, N_0p8] = getcoverageplotcoverage(time(tempSPAN_actual_0p8), signalSPAN_actual_0p8, N0_0p8,'g');
+[dNdt_1p2, N_1p2] = getcoverageplotcoverage(time(tempSPAN_actual_1p2), signalSPAN_actual_1p2, N0_1p2,'b');
+[dNdt_1p6, N_1p6] = getcoverageplotcoverage(time(tempSPAN_actual_1p6), signalSPAN_actual_1p6, N0_1p6, 'm');
+hold off;
+
+%Interpolation scheme to find rates/times 
+CL_theta = 0.02; 
+[CL_time_0p8, coverage_0p8_theta_0p15] = getpointgetinterpolation_focusYgetX(time(tempSPAN_actual_0p8), N_0p8, CL_theta, 2);
+[~, rate_0p8_theta_0p15] = getpointgetinterpolation_focusXgetY(time(tempSPAN_actual_0p8), dNdt_0p8, CL_time_0p8, 2);
+[CL_time_1p2, coverage_1p2_theta_0p15] = getpointgetinterpolation_focusYgetX(time(tempSPAN_actual_1p2), N_1p2, CL_theta, 2);
+[~, rate_1p2_theta_0p15] = getpointgetinterpolation_focusXgetY(time(tempSPAN_actual_1p2),dNdt_1p2, CL_time_1p2, 2);
+[CL_time_1p6, coverage_1p6_theta_0p15] = getpointgetinterpolation_focusYgetX(time(tempSPAN_actual_1p6), N_1p6, CL_theta, 2);
+[~, rate_1p6_theta_0p15] = getpointgetinterpolation_focusXgetY(time(tempSPAN_actual_1p6), dNdt_1p6, CL_time_1p6, 2);
+
+%Making points for Arrhenius plot
+temp = @(t) beta*t + temp_init;
+arrh_x = [1/temp(CL_time_0p8), 1/temp(CL_time_1p2), 1/temp(CL_time_1p6)];
+arrh_y = [log(1 * rate_0p8_theta_0p15 / coverage_0p8_theta_0p15), log(1 * rate_1p2_theta_0p15 / coverage_1p2_theta_0p15) ...
+    log(1 * rate_1p6_theta_0p15 / coverage_1p6_theta_0p15)];
+
+%Plot and linear regression
+p = polyfit(arrh_x, arrh_y, 1);
+% Extract slope and intercept
+slope = p(1);
+intercept = p(2);
+% Generate fit line
+x_fit = linspace(0, max(arrh_x), 100);
+y_fit = polyval(p, x_fit);
+% Plot
+figure(4); 
+cmap = parula(8);
+%Error
+
+residuals = arrh_y - (slope * arrh_x + intercept);
+residuals_std = std(residuals);
+n = length(arrh_x);
+arrh_x_mean = mean(arrh_x);
+arrh_x_var = sum((arrh_x - arrh_x_mean).^2);
+m_std_error = residuals_std/sqrt(arrh_x_var * (n-1));
+c_std_error = residuals_std*sqrt(sum(arrh_x.^2)/(n*arrh_x_var));
+
+arrh_y_mean = mean(arrh_y);
+ss_total = sum((arrh_y - arrh_y_mean).^2);
+ss_residual = sum(residuals.^2);
+% Calculate the residuals and standard deviation for the Arrhenius analysis
+r_squared = 1 - (ss_residual/ss_total);
+r = sqrt(r_squared);
+fprintf('Coverage = \n %.2f \n', CL_theta);
+fprintf('R_squared = \n %.10f\n', r_squared);
+%Actual plot
+hold on;
+plot(arrh_x * 10^3, arrh_y,'o','LineStyle','none' ,'Color','k');
+plot(x_fit * 10^3, y_fit, 'LineWidth', 1, 'Color', 'k' ) ;
+xlabel('1/T (1/K)  *10^3');
+ylabel('ln(beta * f /s)');
+title('Arrhenius Plot');
+grid on;
+legend('Data', 'Linear Fit');
+set(gca, 'YDir','reverse')
+hold off;
+% Display the equation
+fprintf('Fit equation: \n ln(f/s) = %.4f*(1/T) + %.4f\n', slope, intercept); 
+fprintf('Ea in kJ/mol \n = %.10f\n', slope*(-8.314)/1000); % Actual: 160 +- 20 kJ
+fprintf('Pre-exponential factor in s^-1  \n = %.10e\n', exp(intercept));% Actual: 2 x 10^7 s^-1
+fprintf('Log10() of pre-exponential \n = %.10e\n', log10(exp(intercept))); % Actual: 7.3 +- 0.5
+
+
+%% Making more plots at different coverages to ascertain a linear coverage-activation energy relationship. 
