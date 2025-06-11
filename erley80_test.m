@@ -197,8 +197,8 @@ fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actu
 %Last parameter on the polanyi_wigner() output is the coverage, from
 %solving the Madix equation. 'y' is its derivative. 
 init_K = 300; %Kelvin 
-pre_exp = 10^15; %s^-1 
-Ea_Pt = 67.5; %kcal/mol
+pre_exp = 10^13; %s^-1 
+Ea_Pt = 47.5; %kcal/mol
 
 [t_Pt_01, x_Pt_01, y_Pt_01,c_Pt_01] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_01,1050); %Choosing 0.1 = N_0 as the starting value, same as Cox '81
 [t_Pt_015, x_Pt_015, y_Pt_015,c_Pt_015] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,0,pre_exp,N_015,1050);
@@ -215,7 +215,7 @@ y_Pt_015 = y_Pt_015 + (2*rand()-1)/1000;
 y_Pt_02 = y_Pt_02 + (2*rand()-1)/1000;
 c_Pt_02 = c_Pt_02 + (2*rand()-1)/1000;
 %}
-figure(6); clf(6); 
+figure(6); 
 cmap = parula(6);
 hold on;
 plot(t_Pt_01, y_Pt_01, t_Pt_01, c_Pt_01, 'Color', cmap(1,:));

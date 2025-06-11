@@ -15,8 +15,7 @@ Ea = @(N) Ea_0 - N*y_E;
 
 
 %NEW CODE, 6/10
-v_theta = @(N) 10^(log10(v) + w * N);
-
+%v_theta = @(N) 10^(log10(v) + w * N);
 %RESUME OLD CODE 
 
 dNdt = @(t, N) -v_theta(N) * N * exp(-Ea(N) / (R * tmp(t)));
@@ -37,10 +36,6 @@ fprintf('peak temp= %d\n',tmp_span(I));
 
 
 %NEW CODE, 6/10
-
-
-
-end
 
 %3/19 - Maybe have this function spit back the integral to verify that
 %coverage all checks out? 

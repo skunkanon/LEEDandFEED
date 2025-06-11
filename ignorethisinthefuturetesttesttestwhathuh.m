@@ -288,12 +288,12 @@ fprintf('log10(v) at 0.2 coverage \n = %.2f ± %.2f\n', intercept + slope*0.2, c
 
 %%
 kcal_to_J = 4184;
-Ea_Pt = 475; 
+Ea_Pt = 47.5; 
 init_K = 300;
 pre_exp = 10^13;
-w = 0;
-gam=0;
-[t_Pt_01, x_Pt_01, y_Pt_01,c_Pt_01] = polyani_wigner(8,init_K, Ea_Pt * kcal_to_J,gam,pre_exp,N_01,1050); %Choosing 0.1 = N_0 as the starting value, same as Cox '81
+w = 25 ; %kJ/mol
+gam=4 * kcal_to_J;
+[t_Pt_01, x_Pt_01, y_Pt_01,c_Pt_01] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam,w,pre_exp,N_01,1050); %Choosing 0.1 = N_0 as the starting value, same as Cox '81
 [t_Pt_015, x_Pt_015, y_Pt_015,c_Pt_015] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam,w,pre_exp,N_015,1050);
 [t_Pt_02, x_Pt_02, y_Pt_02,c_Pt_02] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam,w,pre_exp,N_02,1050);
 [t_Pt_025, x_Pt_025, y_Pt_025,c_Pt_025] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam,w,pre_exp,N_025,1050);

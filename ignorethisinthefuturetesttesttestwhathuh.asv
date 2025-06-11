@@ -267,6 +267,7 @@ r = sqrt(r_squared);
 %fprintf('Coverage = \n %.2f \n', CL_theta);
 fprintf('R_squared = \n %.10f\n', r_squared);
 %Actual plot
+figure(10); clf;
 hold on;
 plot(x_coverage, y_energy,'o','LineStyle','none' ,'Color','k');
 plot(x_fit, y_fit, 'LineWidth', 1, 'Color', 'k' ) ;
@@ -283,3 +284,39 @@ fprintf('log10(v) at 0 coverage \n = %.2f ± %.2f\n', intercept, c_std_error);
 fprintf('log10(v) at 0.2 coverage \n = %.2f ± %.2f\n', intercept + slope*0.2, c_std_error); % Actual: 160 +- 20 kJ
 %fprintf('Pre-exponential factor in s^-1  \n = %.10e\n', exp(intercept));% Actual: 2 x 10^7 s^-1
 %fprintf('Log10() of pre-exponential \n = %.10e\n', log10(exp(intercept))); % Actual: 7.3 +- 0.5
+
+
+%%
+kcal_to_J = 4184;
+Ea_Pt = 47.5; 
+init_K = 300;
+pre_exp = 10^13;
+w = 94/kcal_to_J;
+gam=0;
+[t_Pt_01, x_Pt_01, y_Pt_01,c_Pt_01] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam,w,pre_exp,N_01,1050); %Choosing 0.1 = N_0 as the starting value, same as Cox '81
+[t_Pt_015, x_Pt_015, y_Pt_015,c_Pt_015] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam,w,pre_exp,N_015,1050);
+[t_Pt_02, x_Pt_02, y_Pt_02,c_Pt_02] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam,w,pre_exp,N_02,1050);
+[t_Pt_025, x_Pt_025, y_Pt_025,c_Pt_025] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam,w,pre_exp,N_025,1050);
+[t_Pt_03, x_Pt_03, y_Pt_03,c_Pt_03] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam,w,pre_exp,N_03,1050);
+[t_Pt_035, x_Pt_035, y_Pt_035,c_Pt_035] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam, w,pre_exp,N_035,1050);
+
+%{
+c_Pt_01 = c_Pt_01 + (2*rand()-1)/1000;
+y_Pt_01 = y_Pt_01 + (2*rand()-1)/1000;
+c_Pt_015 = c_Pt_015 +(2*rand()-1)/1000;
+y_Pt_015 = y_Pt_015 + (2*rand()-1)/1000;
+y_Pt_02 = y_Pt_02 + (2*rand()-1)/1000;
+c_Pt_02 = c_Pt_02 + (2*rand()-1)/1000;
+%}
+figure(6); clf(6); 
+cmap = parula(6);
+hold on;
+plot(t_Pt_01, y_Pt_01, t_Pt_01, c_Pt_01, 'Color', cmap(1,:));
+plot(t_Pt_015, y_Pt_015,t_Pt_015, c_Pt_015,'Color', cmap(2,:));
+plot(t_Pt_02, y_Pt_02, t_Pt_02, c_Pt_02, 'Color', cmap(3,:));
+plot(t_Pt_025, y_Pt_025,t_Pt_025, c_Pt_025,'Color', cmap(4,:));
+plot(t_Pt_03, y_Pt_03, t_Pt_03, c_Pt_03,'Color', cmap(5,:));
+plot(t_Pt_035, y_Pt_035,t_Pt_035, c_Pt_035, 'Color', cmap(6,:));
+legend('0.1', '0.15','0.2', '0.25', '0.3', '0.35');
+hold off;
+ 
