@@ -206,6 +206,7 @@ clear arrh_y_test;
 
 %% 6/9 - Cleaning up with new functions. Should all run as one section. Works.
 %Scanning raw scanned data
+
 new_x_0p8_raw = new_fig5_0p8(:,1)'; 
 new_y_0p8_raw = new_fig5_0p8(:,2)'; 
 new_x_1p2_raw = new_fig5_1p2(:,1)'; 

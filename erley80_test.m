@@ -195,7 +195,7 @@ fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actu
 %Let's do Arrhenius analysis from the raw differential equation. 
 
 %Last parameter on the polanyi_wigner() output is the coverage, from
-%solving the Madix equation. 'y' is its derivative. 
+%solving the Madix equation. 'y' is its derivative.
 init_K = 300; %Kelvin 
 pre_exp = 10^13; %s^-1 
 Ea_Pt = 47.5; %kcal/mol

@@ -291,7 +291,7 @@ kcal_to_J = 4184;
 Ea_Pt = 47.5; 
 init_K = 300;
 pre_exp = 10^13;
-w = 25 ; %kJ/mol
+w = 5 ; %kJ/mol
 gam=4 * kcal_to_J;
 [t_Pt_01, x_Pt_01, y_Pt_01,c_Pt_01] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam,w,pre_exp,N_01,1050); %Choosing 0.1 = N_0 as the starting value, same as Cox '81
 [t_Pt_015, x_Pt_015, y_Pt_015,c_Pt_015] = polyani_wigner_comp1(8,init_K, Ea_Pt * kcal_to_J,gam,w,pre_exp,N_015,1050);
@@ -319,4 +319,67 @@ plot(t_Pt_03, y_Pt_03, t_Pt_03, c_Pt_03,'Color', cmap(5,:));
 plot(t_Pt_035, y_Pt_035,t_Pt_035, c_Pt_035, 'Color', cmap(6,:));
 legend('0.1', '0.15','0.2', '0.25', '0.3', '0.35');
 hold off;
- 
+
+
+%% 6/11 - fit_polyani_wigner_comp1 
+
+init_params = [170 * 1000, 0 , 0 , 10^7.4]; %Ea, gam, w, pre-exponent 
+figure(3); clf;
+temp_init = 300;
+beta = 50; 
+time = @(x) (x-temp_init)/beta;
+hold on;
+
+dNdt_0p8(1:18) = 0;
+dNdt_0p8(98:end) = 0;
+
+plot(time(tempSPAN_actual_0p8) ,dNdt_0p8, 'r' );
+[timesim_0p8, ~, rate_sim_0p8, ~] = polyani_wigner_comp1(50, 300,init_params(1), init_params(2), init_params(3), init_params(4), N0_0p8, 1500);
+plot(timesim_0p8, rate_sim_0p8, 'b');
+hold off;
+
+
+
+%%
+fit_polyani_wigner_comp1(time(tempSPAN_actual_0p8), dNdt_0p8, init_params, 50, 300,1500, N0_0p8);
+%% 6/11 - fit_polyani_wigner_comp1 
+
+init_params = [170 * 1000, 0 , 0 , 10^7.4]; %Ea, gam, w, pre-exponent 
+figure(3); clf;
+temp_init = 300;
+beta = 50; 
+time = @(x) (x-temp_init)/beta;
+hold on;
+
+%dNdt_0p8(1:18) = 0;
+%dNdt_0p8(98:end) = 0;
+
+plot(time(tempSPAN_actual_1p6) ,dNdt_1p6, 'r' );
+[timesim_1p6, ~, rate_sim_1p6, ~] = polyani_wigner_comp1(50, 300,init_params(1), init_params(2), init_params(3), init_params(4), N0_1p6, 1500);
+plot(timesim_1p6, rate_sim_1p6, 'b');
+hold off;
+
+
+
+%%
+fit_polyani_wigner_comp1(time(tempSPAN_actual_1p6), dNdt_1p6, init_params, 50, 300,1500, N0_1p6);
+%% 6/11 - fit_polyani_wigner_comp1 
+
+init_params = [43.07214353274571 * 4184, -6 * 1000 , 1.0  , 4.35349687969534e+07]; %Ea, gam, w, pre-exponent 
+figure(3); clf;
+temp_init = 300;
+beta = 50; 
+time = @(x) (x-temp_init)/beta;
+hold on;
+
+%dNdt_1p2(1:18) = 0;
+%dNdt_0p8(98:end) = 0;
+
+plot(time(tempSPAN_actual_1p2) ,dNdt_1p2, 'r' );
+[timesim_1p2, ~, rate_sim_1p2, ~] = polyani_wigner_comp1(50, 300,init_params(1), init_params(2), init_params(3), init_params(4), N0_1p2, 1500);
+plot(timesim_1p2, rate_sim_1p2, 'b');
+hold off;
+
+
+%%
+fit_polyani_wigner_comp1(time(tempSPAN_actual_1p2), dNdt_1p2, init_params, 50, 300,1500, N0_1p2);

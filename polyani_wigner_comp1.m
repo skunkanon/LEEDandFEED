@@ -5,6 +5,7 @@ v = preexponent; %pre-exponential
 R = 8.314; %gas constant in J/(K*mol)
 kcal_to_j = 4184; %conversion factor
 Ea_0 = Ea;
+
 y_E = gam;
 time_span = linspace(0,(max_tmp - init_tmp)/beta,3000); %array of times from start through whole duration
 %temperature as function of time 
@@ -13,7 +14,7 @@ tmp_span = tmp(time_span); %independent variable for spectra spanning duration
 %coverage-dependent activation energy
 Ea = @(N) Ea_0 - N*y_E;
 
-
+Ea = @(N) Ea_0;
 %NEW CODE, 6/10
 v_theta = @(N) 10^(log10(v) + w * N);
 %RESUME OLD CODE 
