@@ -365,7 +365,7 @@ hold off;
 fit_polyani_wigner_comp1(time(tempSPAN_actual_1p6), dNdt_1p6, init_params, 50, 300,1500, N0_1p6);
 %% 6/11 - fit_polyani_wigner_comp1 
 
-init_params = [43.07214353274571 * 4184, -22666535 , 1.12395713630009  , 4.35349687969534e+07]; %Ea, gam, w, pre-exponent 
+init_params = [43.07214353274571 * 4184, -6 * 1000 , 1.0  , 4.35349687969534e+07]; %Ea, gam, w, pre-exponent 
 figure(3); clf;
 temp_init = 300;
 beta = 50; 
@@ -381,6 +381,115 @@ plot(timesim_1p2, rate_sim_1p2, 'b');
 hold off;
 
 
-open.spotify.com/track/7pPnCYRc3BwXDb6UR1
 %%
 fit_polyani_wigner_comp1(time(tempSPAN_actual_1p2), dNdt_1p2, init_params, 50, 300,1500, N0_1p2);
+
+
+%%
+%6/16- Testing out 'polyani_wigner_niemant', fig4
+
+Ea_0 = 300 * 1000; %J -> kJ/mol
+v_0 = 10^13; 
+beta = 1; %K/s
+w = 25 * 1000; %J -> kJ/mol
+theta_0 = linspace(0.1, 1, 10);
+Tc = [600, 1000, 2000, 10^20]; 
+
+%{
+[time_test, tmp_test, rate_test, cov_test] = polyani_wigner_niemant(beta, 300, Ea_0, w, v_0, theta_0(1),1200, Tc(1));
+subplot(2,2,1); cla;
+%figure(1); clf(1);
+hold on;
+for i=1:length(theta_0)
+    [time, ~, rate, ~] = polyani_wigner_niemant(beta, 300, Ea_0,w,v_0, theta_0(i), 1200, Tc(1));
+    plot(time, rate, 'DisplayName', sprintf('Coverage = %.2f', theta_0(i)));
+end
+ylim([0 0.025]);
+title(sprintf('w = %.1f, T_c = %.1f K', w, Tc(1)))
+hold off;
+
+subplot(2,2,2); cla;
+%clf;
+%figure(2); clf(2);
+hold on;
+for i=1:length(theta_0)
+    [time, ~, rate, ~] = polyani_wigner_niemant(beta, 300, Ea_0,w,v_0, theta_0(i), 1200, Tc(2));
+    plot(time, rate, 'DisplayName', sprintf('Coverage = %.2f', theta_0(i)));
+end
+ylim([0 0.025]);
+title(sprintf('w = %.1f, T_c = %.1f K', w, Tc(2)))
+hold off;
+
+%}
+
+
+
+figure(2); clf;
+for i=1:length(Tc)
+    subplot(2,2, i); cla;
+    colors = parula(length(theta_0));
+    for j=1:length(theta_0)
+    hold on;
+    [time, ~, rate, ~] = polyani_wigner_niemant(beta, 300, Ea_0,w,v_0, theta_0(j), 1200, Tc(i));
+    plot(time, rate, 'Color', colors(j,:),'DisplayName', sprintf('Coverage = %.2f', theta_0(j)));
+    ylim([0 0.025]);
+    title(sprintf('w = %.1f kJ/mol, T_c = %.1f K', w/1000, Tc(i)));
+    legend('show', 'Location', 'best');
+    hold off;
+    end
+end
+
+w = -w; 
+
+figure(3); clf;
+for i=1:length(Tc)
+    subplot(2,2, i); cla;
+    colors = parula(length(theta_0));
+    for j=1:length(theta_0)
+    hold on;
+    [time, ~, rate, ~] = polyani_wigner_niemant(beta, 300, Ea_0,w,v_0, theta_0(j), 1200, Tc(i));
+    plot(time, rate, 'Color', colors(j,:),'DisplayName', sprintf('Coverage = %.2f', theta_0(j)));
+    ylim([0 0.025]);
+    title(sprintf('w = %.1f kJ/mol, T_c = %.1f K', w/1000, Tc(i)));
+    legend('show', 'Location', 'best');
+    hold off;
+    end
+end
+
+
+
+%%
+figure(2); clf;
+for i=1:length(Tc)
+    % Left column (original figure 2)
+    subplot(4,2, 2*i-1); cla;  % This will give indices 1,3,5,7
+    colors = parula(length(theta_0));
+    for j=1:length(theta_0)
+        hold on;
+        [time, ~, rate, ~] = polyani_wigner_niemant(beta, 300, Ea_0,w,v_0, theta_0(j), 1200, Tc(i));
+        plot(time, rate, 'Color', colors(j,:),'DisplayName', sprintf('Coverage = %.2f', theta_0(j)));
+        ylim([0 0.025]);
+        title(sprintf('w = %.1f kJ/mol, T_c = %.1f K', w/1000, Tc(i)));
+        legend('show', 'Location', 'best');
+        hold off;
+    end
+end
+
+w = -w; 
+
+% Right column (original figure 3)
+for i=1:length(Tc)
+    subplot(4,2, 2*i); cla;  % This will give indices 2,4,6,8
+    colors = parula(length(theta_0));
+    for j=1:length(theta_0)
+        hold on;
+        [time, ~, rate, ~] = polyani_wigner_niemant(beta, 300, Ea_0,w,v_0, theta_0(j), 1200, Tc(i));
+        plot(time, rate, 'Color', colors(j,:),'DisplayName', sprintf('Coverage = %.2f', theta_0(j)));
+        ylim([0 0.025]);
+        title(sprintf('w = %.1f kJ/mol, T_c = %.1f K', w/1000, Tc(i)));
+        legend('show', 'Location', 'best');
+        hold off;
+    end
+end
+
+sgtitle('Figure 4, Niemantsverdriet. Attractive (left ', 'FontSize', 14)
