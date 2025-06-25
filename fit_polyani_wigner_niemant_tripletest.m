@@ -1,4 +1,4 @@
-function [best_params, fit_error] = fit_polyani_wigner_niemant(exp_time, exp_rate, init_params, beta, init_tmp, max_tmp, N_0)
+function [best_params, fit_error] = fit_polyani_wigner_niemant_tripletest(exp_time, exp_rate, init_params, beta, init_tmp, max_tmp, N_0)
 % FIT_POLYANI_WIGNER_NIEMANT Fits TDS data using the Polanyi-Wigner equation with Niemant model
 % Inputs:
 %   exp_time: Experimental time data points

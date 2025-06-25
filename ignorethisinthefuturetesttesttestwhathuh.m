@@ -462,4 +462,130 @@ sgtitle('Figure 4, Niemantsverdriet. Attractive (left) and repulsive (right) pai
 
 %%
 
-gfftrgft
+init_params = [300 * 1000, 25 * 1000, 10^13, 600]; %Ea, w , pre-exponent, Tc 
+N_0_test = 0.1; 
+
+ [time, ~, rate, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), N_0_test, 1200, init_params(4));
+
+figure(3); clf;
+hold on;
+plot(time,rate);
+hold off
+
+
+%%
+init_params = [290 * 1000, 25 * 1000, 10^12, 500];
+%% 6/16 - NEW NIEMANSVERDRIET OPTIMIZATION WITH COX LAMBERT DATA WOOO
+temp_init = 300; %K 
+beta = 50; %K/s
+time = @(x) (x-temp_init)/beta;
+
+time_0p8 = time(tempSPAN_actual_0p8);
+figure(5); clf; hold on;
+
+plot(time_0p8, dNdt_0p8);
+
+init_params = [170 * 1000, -10 * 1000, 2* 10^7, 400]; %Ea, w , pre-exponent, Tc 
+N_0_test = N0_0p8; 
+[time_0p8, ~, rate_0p8, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), N_0_test, 1500, init_params(4));
+plot(time_0p8, rate_0p8)
+
+%fit_polyani_wigner_niemant(time(tempSPAN_actual_0p8), dNdt_0p8, init_params, 50, 300, 1500, N_0_test);
+hold off;
+
+%>> fit_polyani_wigner_niemant(time, rate, init_params,1, 300, 1200, 0.1)
+
+
+%% 6/16 - NEW NIEMANSVERDRIET OPTIMIZATION WITH COX LAMBERT DATA WOOO
+temp_init = 300; %K 
+beta = 50; %K/s
+time = @(x) (x-temp_init)/beta;
+
+time_1p6 = time(tempSPAN_actual_1p6);
+figure(5); clf; hold on;
+
+plot(time_1p6, dNdt_1p6);
+
+init_params = [170 * 1000, -10 * 1000, 2* 10^7, 400]; %Ea, w , pre-exponent, Tc 
+N_0_test = N0_1p6; 
+[time_1p6, ~, rate_1p6, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), N_0_test, 1500, init_params(4));
+plot(time_1p6, rate_1p6)
+
+%fit_polyani_wigner_niemant(time(tempSPAN_actual_0p8), dNdt_0p8, init_params, 50, 300, 1500, N_0_test);
+hold off;
+
+%>> fit_polyani_wigner_niemant(time, rate, init_params,1, 300, 1200, 0.1)
+%% 6/16 - NEW NIEMANSVERDRIET OPTIMIZATION WITH COX LAMBERT DATA WOOO/ 6/24 - TELECONFERENCE AMBUSH WOOOO 
+temp_init = 300; %K 
+beta = 50; %K/s
+time = @(x) (x-temp_init)/beta;
+
+time_1p2 = time(tempSPAN_actual_1p2);
+figure(4); clf; hold on;
+
+fprintf('NEW INSTANCE \n');
+init_params = [128 * 1000, -126, 2* 10^5, 100]; %Ea, w , pre-exponent, Tc 
+N_0_test = N0_1p2; 
+[time_1p2, ~, rate_1p2, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), N0_1p2, 1500, init_params(4));
+[time_1p6, ~, rate_1p6, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), N0_1p6, 1500, init_params(4));
+[time_0p8, ~, rate_0p8, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), N0_0p8, 1500, init_params(4));
+plot(time_1p6, rate_1p6,'b--', 'DisplayName', '0.4 Coverage, Fitted');
+plot(time(tempSPAN_actual_1p6), dNdt_1p6,'b', 'DisplayName', '0.4 Coverage, Experimental');
+
+plot(time_1p2, rate_1p2, 'g--','DisplayName','0.3 Coverage, Fitted');
+plot(time(tempSPAN_actual_1p2), dNdt_1p2,'g', 'DisplayName', '0.3 Coverage, Experimental');
+
+plot(time_0p8, rate_0p8,'r--', 'DisplayName','0.2 Coverage, Fitted');
+plot(time(tempSPAN_actual_0p8), dNdt_0p8,'r', 'DisplayName', '0.2 Coverage, Experimental');
+
+legend('show', 'FontSize', 14,'Location', 'best');
+
+%fit_polyani_wigner_niemant(time(tempSPAN_actual_0p8), dNdt_0p8, init_params, 50, 300, 1500, N_0_test);
+hold off;
+
+%>> fit_polyani_wigner_niemant(time, rate, init_params,1, 300, 1200, 0.1)
+
+
+%%
+Ea = @(x) init_params(1) + init_params(2)*x;
+jun24_span = linspace(0, 0.4 ,100);
+plot(jun24_span, Ea(jun24_span)/1000);
+xlabel('Coverage');
+ylabel('Activation Energy (kJ/mol)');
+set(gca, 'FontSize', 16);
+
+%%
+preexp = @(x) init_params(3) * exp((init_params(2) * x) / (init_params(4) * 8.314));
+
+plot(jun24_span, preexp(jun24_span),'r');
+yscale log
+xlabel('Coverage');
+ylabel('Pre-exponential factor (s^-1)');
+set(gca, 'FontSize', 16);
+
+
+%% 6/ 16 - Trying this out on erley screw this dawg run erley80_scan first
+
+% Sort by first column (temperature)
+pd_scan = sortrows(pd_scan, 1);
+erley_x_Pd_raw = pd_scan(:,1)';
+erley_y_Pd_raw = pd_scan(:,2)';
+figure(5); clf; hold on;
+plot(erley_x_Pd_raw, erley_y_Pd_raw);
+hold off;
+
+
+temp_init = 550; 
+beta = 8;
+time_pd = @(tmp) (tmp-temp_init)/beta;time_Pd_span = time_pd(erley_x_Pd_raw);
+
+%figure(6); clf; hold on;
+%[dNdt_Pd, ~] = getcoverageplotcoverage(time_Pd_span, erley_y_Pd_raw, 0.43, 'r');
+%hold off;
+
+figure(7); clf; hold on;
+plot(time_Pd_span, dNdt_Pd);
+init_params = [60.5 * 4184, 0, 10^13, 0];
+[time_Pd_sim, ~ , rate_Pd_sim, ~] = polyani_wigner_niemant(50, 550, init_params(1), init_params(2), init_params(3), 0.43, 1150, init_params(4));
+plot(time_Pd_sim, rate_Pd_sim);
+hold off;
