@@ -544,10 +544,91 @@ legend('show', 'FontSize', 14,'Location', 'best');
 hold off;
 
 %>> fit_polyani_wigner_niemant(time, rate, init_params,1, 300, 1200, 0.1)
+%% 6/25 - TRIPFIT TEST 
+
+init_params = [170 * 1000, -25*1000, 2 * 10^7, 600];
+[time_N_0p1, ~, rate_N_0p1, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), 0.1, 1500, init_params(4));
+[time_N_0p3, ~, rate_N_0p3, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), 0.3, 1500, init_params(4));
+[time_N_0p5, ~, rate_N_0p5, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), 0.5, 1500, init_params(4));
+
+figure(4); clf
+hold on;
+plot(time_N_0p1, rate_N_0p1,'b--', 'DisplayName', '0.1 Coverage, Sim');
+
+plot(time_N_0p3, rate_N_0p3, 'g--','DisplayName','0.3 Coverage, Sim');
+
+plot(time_N_0p5, rate_N_0p5,'r--', 'DisplayName','0.5 Coverage, Sim');
+legend('show', 'FontSize', 14,'Location', 'best');
+
+hold off;
+
+
+%% 6/25 - TRIPFIT TEST, sim data
+exp_data{1} = {time_N_0p1, rate_N_0p1, 0.1};
+exp_data{2} = {time_N_0p3, rate_N_0p3, 0.3};
+exp_data{3} = {time_N_0p5, rate_N_0p5, 0.5};
+
+guess_params = [171 * 1000, -24*1000, 3 * 10^7, 500];
+
+
+
+figure(4); clf
+hold on;
+plot(time_N_0p1, rate_N_0p1,'b--', 'DisplayName', '0.1 Coverage, Sim');
+
+plot(time_N_0p3, rate_N_0p3, 'g--','DisplayName','0.3 Coverage, Sim');
+
+plot(time_N_0p5, rate_N_0p5,'r--', 'DisplayName','0.5 Coverage, Sim');
+legend('show', 'FontSize', 14,'Location', 'best');
+
+hold off;
+
+%% 6/2 - TRIPFIT RUN OPTIMIZATION 
+[fit_params, fit_error] = fit_polyani_wigner_niemant_tripletest(exp_data, guess_params,beta, 300, 1500 );
+
+
+%% 6/25 - TRIPFIT TEST, REAL DATA
+
+exp_data{1} = {time(tempSPAN_actual_0p8), dNdt_0p8, N0_0p8};
+exp_data{2} = {time(tempSPAN_actual_1p2), dNdt_1p2, N0_1p2};
+exp_data{3} = {time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6};
+%exp_data{4} = {time(tempSPAN_actual_0p4), dNdt_0p4, N0_0p4};
+
+real_params = [170 * 1000, -25 * 1000, 1 * 10^7, 300];
+
+
+%[time_sim_0p4, ~, rate_sim_0p4, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_0p4, 1500, real_params(4));
+[time_sim_0p8, ~, rate_sim_0p8, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_0p8, 1500, real_params(4));
+[time_sim_1p2, ~, rate_sim_1p2, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_1p2, 1500, real_params(4));
+[time_sim_1p6, ~, rate_sim_1p6, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_1p6, 1500, real_params(4));
+
+figure(5); clf
+hold on;
+
+%plot(time(tempSPAN_actual_0p4), dNdt_0p4, 'm', 'DisplayName', '0.1 Coverage, Experimental');
+%plot(time_sim_0p4, rate_sim_0p4,'m--', 'DisplayName', '0.1 Coverage, Sim');
+
+plot(time(tempSPAN_actual_0p8), dNdt_0p8, 'b', 'DisplayName', '0.2 Coverage, Experimental');
+plot(time_sim_0p8, rate_sim_0p8,'b--', 'DisplayName', '0.2 Coverage, Sim');
+
+plot(time(tempSPAN_actual_1p2), dNdt_1p2, 'g', 'DisplayName', '0.3 Coverage, Experimental');
+plot(time_sim_1p2, rate_sim_1p2, 'g--','DisplayName','0.3 Coverage, Sim');
+
+plot(time(tempSPAN_actual_1p6), dNdt_1p6, 'r', 'DisplayName', '0.4 Coverage, Experimental');
+plot(time_sim_1p6, rate_sim_1p6,'r--', 'DisplayName','0.4 Coverage, Sim');
+legend('show', 'FontSize', 14,'Location', 'best');
+
+hold off;
+
+%% 6/26 - TRIPFIT RUN OPTIMIZATION 
+[fit_params, fit_error] = fit_polyani_wigner_niemant_tripletest(exp_data, real_params,beta, 300, 1500 );
+
+clear exp_data 
+
 
 
 %%
-Ea = @(x) init_params(1) + init_params(2)*x;
+Ea = @(x) real_params(1) + real_params(2)*x;
 jun24_span = linspace(0, 0.4 ,100);
 plot(jun24_span, Ea(jun24_span)/1000);
 xlabel('Coverage');
@@ -555,7 +636,7 @@ ylabel('Activation Energy (kJ/mol)');
 set(gca, 'FontSize', 16);
 
 %%
-preexp = @(x) init_params(3) * exp((init_params(2) * x) / (init_params(4) * 8.314));
+preexp = @(x) real_params(3) * exp((real_params(2) * x) / (real_params(4) * 8.314));
 
 plot(jun24_span, preexp(jun24_span),'r');
 yscale log
@@ -585,7 +666,9 @@ time_pd = @(tmp) (tmp-temp_init)/beta;time_Pd_span = time_pd(erley_x_Pd_raw);
 
 figure(7); clf; hold on;
 plot(time_Pd_span, dNdt_Pd);
-init_params = [60.5 * 4184, 0, 10^13, 0];
-[time_Pd_sim, ~ , rate_Pd_sim, ~] = polyani_wigner_niemant(50, 550, init_params(1), init_params(2), init_params(3), 0.43, 1150, init_params(4));
+real_params = [60.5 * 4184, 0, 10^13, 0];
+[time_Pd_sim, ~ , rate_Pd_sim, ~] = polyani_wigner_niemant(50, 550, real_params(1), real_params(2), real_params(3), 0.43, 1150, real_params(4));
 plot(time_Pd_sim, rate_Pd_sim);
 hold off;
+%%
+

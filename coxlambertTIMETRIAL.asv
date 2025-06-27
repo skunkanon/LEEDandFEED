@@ -81,7 +81,7 @@ hold on;
 hold off;
 %% Using new functions to get more accurate values for time, signal, and coverage. 6/9. 
 % Revisiting Arrhenius method, 6/26 
-CL_theta = 0.15; 
+CL_theta = 0.16; 
 temp_init = 300; %K 
 beta = 50; %K/s
 time = @(x) (x-temp_init)/beta;
@@ -116,21 +116,14 @@ arrh_y = [log(1 * rate_1p2_theta_0p15 / 0.2) ...
 %}
 
 
+
 p = polyfit(arrh_x, arrh_y, 1);
 % Extract slope and intercept
 slope = p(1);
 intercept = p(2);
-
-% Calculate R^2
-y_pred = polyval(p, arrh_x);
-SS_res = sum((arrh_y - y_pred).^2);  % Sum of squared residuals
-SS_tot = sum((arrh_y - mean(arrh_y)).^2);  % Total sum of squares
-R_squared = 1 - (SS_res / SS_tot);
-
 % Generate fit line
 x_fit = linspace(min(arrh_x), max(arrh_x), 100);
 y_fit = polyval(p, x_fit);
-
 % Plot
 figure(4); clf;
 scatter(arrh_x * 10^3, arrh_y, 'filled');
@@ -142,11 +135,9 @@ title('Arrhenius Plot');
 grid on;
 legend('Data', 'Linear Fit');
 set(gca, 'YDir','reverse')
-
 % Display the equation
 fprintf('FOR %.4f COVERAGE \n', CL_theta);
 fprintf('Fit equation: ln(beta * f/s) = %.4f*(1/T) + %.4f\n', slope, intercept); 
-fprintf('R^2 = %.4f\n', R_squared);
 fprintf('Ea in kJ/mol \n = %.4f\n', slope*(-8.314)/1000); % Actual: 160 +- 20 kJ
 fprintf('Pre-exponential factor in s^-1 for 0.8 x 10^19 dosage \n = %.4e\n', exp(intercept));% Actual: 2 x 10^7 s^-1
 fprintf('Log10() of pre-exponential \n = %.4e\n', log10(exp(intercept))); % Actual: 7.3 +- 0.5
@@ -216,8 +207,8 @@ clear arrh_y_test;
 
 %% 6/9 - Cleaning up with new functions. Should all run as one section. Works.
 %Scanning raw scanned data
-%new_x_0p4_raw = new_fig5_0p4(:,1)'; %ADDED 
-%new_y_0p4_raw = new_fig5_0p4(:,2)'; 
+new_x_0p4_raw = new_fig5_0p4(:,1)'; 
+new_y_0p4_raw = new_fig5_0p4(:,2)'; 
 new_x_0p8_raw = new_fig5_0p8(:,1)'; 
 new_y_0p8_raw = new_fig5_0p8(:,2)'; 
 new_x_1p2_raw = new_fig5_1p2(:,1)'; 
@@ -228,7 +219,7 @@ new_y_1p6_raw = new_fig5_1p6(:,2)';
 %Background reduction
 figure(1); clf;
 hold on;
-%[tempSPAN_actual_0p4 , signalSPAN_actual_0p4] = reduceBGgetspectra(new_x_0p4_raw, new_y_0p4_raw,750,1450,'k');
+[tempSPAN_actual_0p4 , signalSPAN_actual_0p4] = reduceBGgetspectra(new_x_0p4_raw, new_y_0p4_raw,750,1450,'k');
 
 
 

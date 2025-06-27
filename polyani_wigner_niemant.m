@@ -19,8 +19,8 @@ rate_span = arrayfun(@(t, N) -dNdt(t, N), t, N);
 cov_span = N;
 %Ea_span = arrayfun(@(N) Ea(N),N);
 [~,I] = max(rate_span);
-fprintf('max rate= %d\n', max(rate_span));
-fprintf('\n');
-fprintf('peak temp= %d\n',tmp_span(I));
+%fprintf('max rate= %d\n', max(rate_span));
+%fprintf('\n');
+%fprintf('peak temp= %d\n',tmp_span(I));
 end
 
