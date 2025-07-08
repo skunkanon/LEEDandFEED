@@ -1,4 +1,4 @@
-function [best_params, fit_error] = fit_polyani_wigner_niemant_tripletest(exp_data, init_params, beta, init_tmp, max_tmp)
+function [best_params, fit_error, hessian, cov_matrix, stderr] = fit_polyani_wigner_niemant_tripletest(exp_data, init_params, beta, init_tmp, max_tmp)
 % FIT_POLYANI_WIGNER_NIEMANT_TRIPLETEST Fits multiple TDS spectra using the same kinetic parameters
 % Inputs:
 %   exp_data: Cell array of experimental data, each cell contains {time, rate, N_0}
@@ -12,6 +12,9 @@ function [best_params, fit_error] = fit_polyani_wigner_niemant_tripletest(exp_da
 % Outputs:
 %   best_params: Best fit parameters [Ea, w, preexponent, T_c]
 %   fit_error: Final fitting error (sum across all spectra)
+%   hessian: Hessian matrix at the solution
+%   cov_matrix: Covariance matrix for the four parameters
+%   stderr: Standard errors for the four parameters
 
 % Define the objective function (sum of squared errors across all spectra)
 objective = @(params) calculate_error_multiple(params, exp_data, beta, init_tmp, max_tmp);
@@ -26,18 +29,36 @@ options = optimoptions('fmincon', 'Display', 'iter', ...
                       'Algorithm', 'interior-point');
 
 % Set bounds: [Ea, w, preexponent, T_c]
-
-%lb = [init_params(1) - 20*1000, -50 * 1000, 10^6.8, 0];    % Lower bounds
-%ub = [init_params(1) + 20*1000, 0, 10^7.8, inf];     % Upper bounds
-
 lb = [140 * 1000, 0, 0, 0];    % Lower bounds
 ub = [inf , 100*1000, inf, inf];     % Upper bounds
 
-% Run the optimization using fmincon with bounds
-[best_params, fit_error] = fmincon(objective, init_params, [], [], [], [], lb, ub, [], options);
+[best_params, fit_error, ~, ~, ~, ~, hessian] = fmincon(objective, init_params, [], [], [], [], lb, ub, [], options);
 
-% Plot the results for all spectra
-plot_results_multiple(exp_data, best_params, beta, init_tmp, max_tmp);
+% Calculate number of data points (for all spectra)
+n_data = 0;
+for i = 1:length(exp_data)
+    n_data = n_data + length(exp_data{i}{2});
+end
+n_params = 4;
+residual_variance = fit_error / (n_data - n_params);
+
+% Covariance matrix and standard errors
+if ~isempty(hessian) && all(size(hessian) == [4 4]) && all(~isnan(hessian(:)))
+    cov_matrix = residual_variance * inv(hessian);
+    stderr = sqrt(diag(cov_matrix));
+else
+    cov_matrix = nan(4);
+    stderr = nan(4,1);
+end
+
+% Plot the results for all spectra if fit succeeded
+if all(~isnan(best_params))
+    plot_results_multiple(exp_data, best_params, beta, init_tmp, max_tmp);
+end
+
+% Print standard errors
+fprintf('\nStandard errors (Ea, w, preexponent, T_c):\n');
+disp(stderr');
 end
 
 function error = calculate_error_multiple(params, exp_data, beta, init_tmp, max_tmp)

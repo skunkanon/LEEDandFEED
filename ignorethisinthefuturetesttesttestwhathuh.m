@@ -625,7 +625,7 @@ hold off;
 
 %% 6/26 - TRIPFIT RUN OPTIMIZATION 
 %exp_data = {{time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6}};
-[fit_params, fit_error] = fit_polyani_wigner_niemant_tripletest(exp_data, real_params,beta, 300, 1500 );
+[best_params, fit_error, hessian, cov_matrix, stderr] = fit_polyani_wigner_niemant_tripletest(exp_data, real_params,beta, 300, 1500 );
 
 clear exp_data 
 
