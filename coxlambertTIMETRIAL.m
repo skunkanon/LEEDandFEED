@@ -72,7 +72,7 @@ N0_8p0 = 0.49657;
 
 figure(2); clf;
 hold on;
-[~,~] = getcoverageplotcoverage(time(tempSPAN_actual_0p4), signalSPAN_actual_0p4, N0_0p4,'r');
+[dNdt_0p4,N_0p4] = getcoverageplotcoverage(time(tempSPAN_actual_0p4), signalSPAN_actual_0p4, N0_0p4,'r');
 [dNdt_0p8, N_0p8] = getcoverageplotcoverage(time(tempSPAN_actual_0p8), signalSPAN_actual_0p8, N0_0p8,'g');
 [dNdt_1p2, N_1p2] = getcoverageplotcoverage(time(tempSPAN_actual_1p2), signalSPAN_actual_1p2, N0_1p2,'b');
 [dNdt_1p6, N_1p6] = getcoverageplotcoverage(time(tempSPAN_actual_1p6), signalSPAN_actual_1p6, N0_1p6, 'm');

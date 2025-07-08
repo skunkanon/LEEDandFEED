@@ -589,15 +589,15 @@ hold off;
 
 %% 6/25 - TRIPFIT TEST, REAL DATA
 
-exp_data{1} = {time(tempSPAN_actual_0p8), dNdt_0p8, N0_0p8};
-exp_data{2} = {time(tempSPAN_actual_1p2), dNdt_1p2, N0_1p2};
-exp_data{3} = {time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6};
-%exp_data{4} = {time(tempSPAN_actual_0p4), dNdt_0p4, N0_0p4};
+exp_data{1} = {time(tempSPAN_actual_0p4), dNdt_0p4, N0_0p4};
+exp_data{2} = {time(tempSPAN_actual_0p8), dNdt_0p8, N0_0p8};
+exp_data{3} = {time(tempSPAN_actual_1p2), dNdt_1p2, N0_1p2};
+exp_data{4} = {time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6};
 
-real_params = [170 * 1000, 200, 2*10^7, 9999999999];
+real_params = [172 * 1000, 24 * 1000 , 2*10^7, 9999999999];
 
 
-%[time_sim_0p4, ~, rate_sim_0p4, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_0p4, 1500, real_params(4));
+[time_sim_0p4, ~, rate_sim_0p4, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_0p4, 1500, real_params(4));
 [time_sim_0p8, ~, rate_sim_0p8, cov_span_0p8] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_0p8, 1500, real_params(4));
 [time_sim_1p2, ~, rate_sim_1p2, cov_span_1p2] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_1p2, 1500, real_params(4));
 [time_sim_1p6, ~, rate_sim_1p6, cov_span_1p6] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_1p6, 1500, real_params(4));
@@ -605,8 +605,8 @@ real_params = [170 * 1000, 200, 2*10^7, 9999999999];
 figure(5); clf
 hold on;
 
-%plot(time(tempSPAN_actual_0p4), dNdt_0p4, 'm', 'DisplayName', '0.1 Coverage, Experimental');
-%plot(time_sim_0p4, rate_sim_0p4,'m--', 'DisplayName', '0.1 Coverage, Sim');
+plot(time(tempSPAN_actual_0p4), dNdt_0p4, 'm', 'DisplayName', '0.1 Coverage, Experimental');
+plot(time_sim_0p4, rate_sim_0p4,'m--', 'DisplayName', '0.1 Coverage, Sim');
 
 plot(time(tempSPAN_actual_0p8), dNdt_0p8, 'b', 'DisplayName', '0.2 Coverage, Experimental');
 plot(time_sim_0p8, rate_sim_0p8,'b--', 'DisplayName', '0.2 Coverage, Sim');

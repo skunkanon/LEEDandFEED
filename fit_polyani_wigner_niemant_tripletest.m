@@ -96,7 +96,7 @@ function plot_results_multiple(exp_data, params, beta, init_tmp, max_tmp)
     
     % Create figure
     figure; clf;
-    colors = {'ko', 'bs', 'rd'}; % Different markers for each spectrum
+    cmap = lines(length(exp_data)); % Different markers for each spectrum
     
     % Plot each spectrum
     for i = 1:length(exp_data)
@@ -108,11 +108,11 @@ function plot_results_multiple(exp_data, params, beta, init_tmp, max_tmp)
         [model_time, ~, model_rate, ~] = polyani_wigner_niemant(beta, init_tmp, Ea, w, preexponent, N_0, max_tmp, T_c);
         
         % Plot experimental data
-        plot(exp_time, exp_rate, colors{i}, 'DisplayName', sprintf('Experimental N_0=%.3f', N_0));
+        plot(exp_time, exp_rate, 'Color', cmap(i,:), 'DisplayName', sprintf('Experimental N_0=%.3f', N_0));
         hold on;
         
         % Plot fitted data
-        plot(model_time, model_rate, colors{i}(1), 'DisplayName', sprintf('Fitted N_0=%.3f', N_0));
+        plot(model_time, model_rate, 'Color', cmap(i,:), 'DisplayName', sprintf('Fitted N_0=%.3f', N_0));
     end
     
     xlabel('Time (s)');
