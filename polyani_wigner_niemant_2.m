@@ -1,4 +1,4 @@
-function [time_span, tmp_span, rate_span,cov_span] = polyani_wigner_niemant(beta,init_tmp,Ea,w,preexponent,N_0,max_tmp, T_c)
+function [time_span, tmp_span, rate_span,cov_span] = polyani_wigner_niemant_2(beta,init_tmp,Ea,w_1, w_2,preexponent,N_0,max_tmp, T_c)
 v = preexponent; %pre-exponential
 R = 8.314; %gas constant in J/(K*mol)
 kcal_to_j = 4184; %conversion factor
@@ -11,9 +11,9 @@ tmp_span = tmp(time_span); %independent variable for spectra spanning duration
 %coverage-dependent activation energy
 %Ea = @(N) Ea_0 - N*y_E;
 %solve coverage differential equation 
-%dNdt = @(t, N) -v * N * exp(-Ea_0 / (R * tmp(t))) * exp((w * N / R) * (1/tmp(t) - 1/T_c)); 
-%dNdt = @(t, N) -v * N * exp(-Ea_0 / (R * tmp(t))) * exp(( (N >= 0.25) * w  * (N - 0.25 )/ R ) * (1/tmp(t) - 1/T_c)); %PIECEWISE 'W' 6/30
-dNdt = @(t, N) -v * N * exp(-Ea_0 / (R * tmp(t))) * exp((w^2 * N^2 / R) * (1/tmp(t) - 1/T_c)); 
+
+dNdt = @(t, N) -v * N * exp(-Ea_0 / (R * tmp(t))) * exp(( (w_1 * N + w_2^2 * N^2)  / R) * (1/tmp(t) - 1/T_c)); 
+
 
 options = odeset('RelTol', 1e-13, 'AbsTol', 1e-19); % Adjust tolerances
 [t, N] = ode15s(dNdt, time_span, N_0, options);

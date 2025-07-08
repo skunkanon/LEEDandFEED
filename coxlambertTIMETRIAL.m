@@ -79,6 +79,12 @@ hold on;
 
 
 hold off;
+
+
+%% 6/30 - Getting nonlinear regime desorption spectra
+[dNdt_2p8, N_2p8] = getcoverageplotcoverage(time(tempSPAN_actual_2p8), signalSPAN_actual_2p8, N0_2p8, 'k');
+
+
 %% Using new functions to get more accurate values for time, signal, and coverage. 6/9. 
 % Revisiting Arrhenius method, 6/26 
 CL_theta = 0.15; 

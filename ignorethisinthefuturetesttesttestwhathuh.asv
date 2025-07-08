@@ -546,7 +546,7 @@ hold off;
 %>> fit_polyani_wigner_niemant(time, rate, init_params,1, 300, 1200, 0.1)
 %% 6/25 - TRIPFIT TEST 
 
-init_params = [170 * 1000, -25*1000, 2 * 10^7, 600];
+init_params = [172.87 * 1000, 25*1000, 2 * 10^7, 999999990];
 [time_N_0p1, ~, rate_N_0p1, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), 0.1, 1500, init_params(4));
 [time_N_0p3, ~, rate_N_0p3, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), 0.3, 1500, init_params(4));
 [time_N_0p5, ~, rate_N_0p5, ~] = polyani_wigner_niemant(beta, 300, init_params(1), init_params(2), init_params(3), 0.5, 1500, init_params(4));
@@ -568,7 +568,7 @@ exp_data{1} = {time_N_0p1, rate_N_0p1, 0.1};
 exp_data{2} = {time_N_0p3, rate_N_0p3, 0.3};
 exp_data{3} = {time_N_0p5, rate_N_0p5, 0.5};
 
-guess_params = [171 * 1000, -24*1000, 3 * 10^7, 500];
+guess_params = [172.87 * 1000, 25*1000, 2 * 10^7, 999999990];
 
 
 
@@ -594,37 +594,44 @@ exp_data{2} = {time(tempSPAN_actual_1p2), dNdt_1p2, N0_1p2};
 exp_data{3} = {time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6};
 %exp_data{4} = {time(tempSPAN_actual_0p4), dNdt_0p4, N0_0p4};
 
-real_params = [160 * 1000, -10 * 1000, 2 * 10^7, 200];
+real_params = [170 * 1000, 60 * 1000, 3*10^7, 70000000000000];
 
 
 %[time_sim_0p4, ~, rate_sim_0p4, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_0p4, 1500, real_params(4));
-[time_sim_0p8, ~, rate_sim_0p8, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_0p8, 1500, real_params(4));
-[time_sim_1p2, ~, rate_sim_1p2, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_1p2, 1500, real_params(4));
-[time_sim_1p6, ~, rate_sim_1p6, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_1p6, 1500, real_params(4));
+[time_sim_0p8, ~, rate_sim_0p8, cov_span_0p8] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_0p8, 1500, real_params(4));
+[time_sim_1p2, ~, rate_sim_1p2, cov_span_1p2] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_1p2, 1500, real_params(4));
+[time_sim_1p6, ~, rate_sim_1p6, cov_span_1p6] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_1p6, 1500, real_params(4));
 
 figure(5); clf
 hold on;
 
-plot(time(tempSPAN_actual_0p4), dNdt_0p4, 'm', 'DisplayName', '0.1 Coverage, Experimental');
-plot(time_sim_0p4, rate_sim_0p4,'m--', 'DisplayName', '0.1 Coverage, Sim');
+%plot(time(tempSPAN_actual_0p4), dNdt_0p4, 'm', 'DisplayName', '0.1 Coverage, Experimental');
+%plot(time_sim_0p4, rate_sim_0p4,'m--', 'DisplayName', '0.1 Coverage, Sim');
 
 plot(time(tempSPAN_actual_0p8), dNdt_0p8, 'b', 'DisplayName', '0.2 Coverage, Experimental');
 plot(time_sim_0p8, rate_sim_0p8,'b--', 'DisplayName', '0.2 Coverage, Sim');
+%plot(time_sim_0p8, cov_span_0p8, 'b', 'LineWidth', 3);
 
 plot(time(tempSPAN_actual_1p2), dNdt_1p2, 'g', 'DisplayName', '0.3 Coverage, Experimental');
 plot(time_sim_1p2, rate_sim_1p2, 'g--','DisplayName','0.3 Coverage, Sim');
+%plot(time_sim_1p2, cov_span_1p2,'g', 'LineWidth', 3);
 
 plot(time(tempSPAN_actual_1p6), dNdt_1p6, 'r', 'DisplayName', '0.4 Coverage, Experimental');
 plot(time_sim_1p6, rate_sim_1p6,'r--', 'DisplayName','0.4 Coverage, Sim');
+%plot(time_sim_1p6, rate_sim_1p6, 'r')
 legend('show', 'FontSize', 14,'Location', 'best');
 
 hold off;
 
 %% 6/26 - TRIPFIT RUN OPTIMIZATION 
+exp_data = {{time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6}};
 [fit_params, fit_error] = fit_polyani_wigner_niemant_tripletest(exp_data, real_params,beta, 300, 1500 );
 
 clear exp_data 
 
+%% 6/30 TESTING PIECEWISE 'w' 
+
+[time_sim_, ~, rate_sim_0p8, cov_span_0p8] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_0p8, 1500, real_params(4));
 
 
 %%
