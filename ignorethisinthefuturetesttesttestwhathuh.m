@@ -589,12 +589,12 @@ hold off;
 
 %% 6/25 - TRIPFIT TEST, REAL DATA
 
-exp_data{1} = {time(tempSPAN_actual_0p4), dNdt_0p4, N0_0p4};
-exp_data{2} = {time(tempSPAN_actual_0p8), dNdt_0p8, N0_0p8};
-exp_data{3} = {time(tempSPAN_actual_1p2), dNdt_1p2, N0_1p2};
-exp_data{4} = {time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6};
+exp_data{1} = {time(tempSPAN_actual_0p4), dNdt_0p4, N0_0p4,std_0p4};
+exp_data{2} = {time(tempSPAN_actual_0p8), dNdt_0p8, N0_0p8, std_0p8};
+exp_data{3} = {time(tempSPAN_actual_1p2), dNdt_1p2, N0_1p2, std_1p2};
+exp_data{4} = {time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6, std_1p6};
 
-real_params = [172 * 1000, 24 * 1000 , 2*10^7, 9999999999];
+real_params = [170 * 1000, 24 * 1000 , 2*10^7, 10^15];
 
 
 [time_sim_0p4, ~, rate_sim_0p4, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_0p4, 1500, real_params(4));
@@ -627,11 +627,10 @@ hold off;
 %exp_data = {{time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6}};
 [best_params, fit_error, hessian, cov_matrix, stderr] = fit_polyani_wigner_niemant_tripletest(exp_data, real_params,beta, 300, 1500 );
 
-clear exp_data 
-
+%clear exp_data 
 %% 6/30 TESTING PIECEWISE 'w' ON 0.46 COVERAGE 
 
-real_params = [170 * 1000, 60 * 1000, 3*10^7, 70000000000000];
+real_params = [170 * 1000, 60 * 1000, 2*10^7, 70000000000000];
 [time_sim_big, ~, rate_sim_big, cov_span_big] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), 0.46, 1500, real_params(4));
 
 figure(6); clf;

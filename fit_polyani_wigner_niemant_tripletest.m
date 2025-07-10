@@ -29,8 +29,15 @@ options = optimoptions('fmincon', 'Display', 'iter', ...
                       'Algorithm', 'interior-point');
 
 % Set bounds: [Ea, w, preexponent, T_c]
+
 lb = [140 * 1000, 0, 0, 0];    % Lower bounds
 ub = [inf , 100*1000, inf, inf];     % Upper bounds
+
+%7/9 - Just Ea and w 
+
+%lb = [140 * 1000, 0];
+%ub = [inf, inf];
+
 
 [best_params, fit_error, ~, ~, ~, ~, hessian] = fmincon(objective, init_params, [], [], [], [], lb, ub, [], options);
 
@@ -39,7 +46,9 @@ n_data = 0;
 for i = 1:length(exp_data)
     n_data = n_data + length(exp_data{i}{2});
 end
-n_params = 4;
+
+n_params = 4; % All four
+%n_params = 2; %Just Ea and w, 7/9 
 residual_variance = fit_error / (n_data - n_params);
 
 % Covariance matrix and standard errors
@@ -62,7 +71,7 @@ disp(stderr');
 end
 
 function error = calculate_error_multiple(params, exp_data, beta, init_tmp, max_tmp)
-    try
+   
         % Extract parameters
         Ea = params(1);
         w = params(2);
@@ -101,11 +110,7 @@ function error = calculate_error_multiple(params, exp_data, beta, init_tmp, max_
         
         error = total_error;
         
-    catch ME
-        % If any error occurs, return a large error value
-        fprintf('Error in objective function: %s\n', ME.message);
-        error = 1e10;
-    end
+
 end
 
 function plot_results_multiple(exp_data, params, beta, init_tmp, max_tmp)

@@ -1,4 +1,4 @@
-function [temperature_span,signal_span] = reduceBGgetspectra(x_raw, y_raw,lowTtarget, highTtarget, color)
+function [temperature_span,signal_span, BG_std] = reduceBGgetspectra(x_raw, y_raw,lowTtarget, highTtarget, color)
 %Variable definitions say temperature, but can take time bounds as well as temperature bounds. 
 
 templowBGtarget = lowTtarget; 
@@ -37,6 +37,9 @@ plot(new_BG_span, new_BG(new_BG_span), color);
 plot(x_raw, y_raw, color);
 plot(temperature_span, signal_span, color, 'LineWidth',2);
 
+%FOR WEIGHTED FITTING, 7/9
+
+BG_std = std(new_BG_pre_raw) * sqrt(1 + abs(signal_span) / new_BG_pre);
 
 
 end
