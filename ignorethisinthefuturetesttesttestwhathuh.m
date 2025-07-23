@@ -594,7 +594,7 @@ exp_data{2} = {time(tempSPAN_actual_0p8), dNdt_0p8, N0_0p8, std_0p8};
 exp_data{3} = {time(tempSPAN_actual_1p2), dNdt_1p2, N0_1p2, std_1p2};
 exp_data{4} = {time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6, std_1p6};
 
-real_params = [170 * 1000, 24 * 1000 , 2*10^7, 10^7];
+real_params = [170 * 1000, 24 * 1000 , 1*10^7, 10^2];
 
 
 [time_sim_0p4, ~, rate_sim_0p4, ~] = polyani_wigner_niemant(beta, 300, real_params(1), real_params(2), real_params(3), N0_0p4, 1500, real_params(4));
@@ -624,13 +624,47 @@ legend('show', 'FontSize', 14,'Location', 'best');
 hold off;
 
 %% 6/26 - TRIPFIT RUN OPTIMIZATION 
-%exp_data = {{time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6}};
+real_params = [170 * 1000, 24 * 1000 , 1*10^7, 10^10];
+
+exp_data = {{time(tempSPAN_actual_2p0), dNdt_2p0, N0_2p0, std_2p0}};
 [best_params, fit_error, hessian, cov_matrix, stderr] = fit_polyani_wigner_niemant_tripletest(exp_data, real_params,beta, 300, 1500 );
 
 %clear exp_data 
 
 
+%% NO T_C OPTIMIZATION, 7/18 WHAT THE HELL 
+
+real_params = [170 * 1000, 24 * 1000 , 4*10^7];
+
+[best_params, fit_error, hessian, cov_matrix, stderr] = fit_polyani_wigner_niemant_tripletest_noTc(exp_data, real_params,10^8, beta, 300, 1500 );
+
+
 %% 7/10 - Trying out piecewise stuff from meeting (cutoff at coverage = 1/3) 
+%DOESNT WORK, isolated the 2p0 (coverage of 0.43) the weird discontinuity
+%still messes it up 
+
+exp_data{1} = {time(tempSPAN_actual_0p4), dNdt_0p4, N0_0p4, std_0p4};
+exp_data{2} = {time(tempSPAN_actual_0p8), dNdt_0p8, N0_0p8, std_0p8};
+exp_data{3} = {time(tempSPAN_actual_1p2), dNdt_1p2, N0_1p2, std_1p2};
+exp_data{4} = {time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6, std_1p6};
+exp_data{5} = {time(tempSPAN_actual_2p0), dNdt_2p0, N0_2p0, std_2p0};
+%exp_data{6} = {time(tempSPAN_actual_2p8), dNdt_2p8, N0_2p8, std_2p8};
+%exp_data{7} = {time(tempSPAN_actual_4p0), dNdt_4p0, N0_4p0, std_4p0};
+%exp_data{8} = {time(tempSPAN_actual_8p0), dNdt_8p0, N0_8p0, std_8p0};
+
+
+
+
+
+
+real_params = [170 * 1000, 24 * 1000 , 1*10^7, 10^8];
+
+
+
+
+
+
+
 %% 6/30 TESTING PIECEWISE 'w' ON 0.46 COVERAGE 
 
 real_params = [170 * 1000, 60 * 1000, 2*10^7, 70000000000000];

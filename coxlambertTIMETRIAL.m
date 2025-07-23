@@ -43,10 +43,10 @@ hold on;
 [tempSPAN_actual_0p8 , signalSPAN_actual_0p8, std_0p8] = reduceBGgetspectra(new_x_0p8_raw, new_y_0p8_raw,800,1500,'g');
 [tempSPAN_actual_1p2 , signalSPAN_actual_1p2, std_1p2] = reduceBGgetspectra(new_x_1p2_raw, new_y_1p2_raw,800,1500,'b');
 [tempSPAN_actual_1p6 , signalSPAN_actual_1p6, std_1p6] = reduceBGgetspectra(new_x_1p6_raw, new_y_1p6_raw,800,1500,'m');
-[tempSPAN_actual_2p0 , signalSPAN_actual_2p0, ~] = reduceBGgetspectra(new_x_2p0_raw, new_y_2p0_raw,800,1400,'k');
-[tempSPAN_actual_2p8 , signalSPAN_actual_2p8, ~] = reduceBGgetspectra(new_x_2p8_raw, new_y_2p8_raw,800,1400,'y');
-[tempSPAN_actual_4p0 , signalSPAN_actual_4p0, ~] = reduceBGgetspectra(new_x_4p0_raw, new_y_4p0_raw,800,1400,'c');
-[tempSPAN_actual_8p0 , signalSPAN_actual_8p0, ~] = reduceBGgetspectra(new_x_8p0_raw, new_y_8p0_raw,800,1400,'r');
+[tempSPAN_actual_2p0 , signalSPAN_actual_2p0, std_2p0] = reduceBGgetspectra(new_x_2p0_raw, new_y_2p0_raw,800,1400,'k');
+[tempSPAN_actual_2p8 , signalSPAN_actual_2p8, std_2p8] = reduceBGgetspectra(new_x_2p8_raw, new_y_2p8_raw,800,1400,'y');
+[tempSPAN_actual_4p0 , signalSPAN_actual_4p0, std_4p0] = reduceBGgetspectra(new_x_4p0_raw, new_y_4p0_raw,800,1400,'c');
+[tempSPAN_actual_8p0 , signalSPAN_actual_8p0, std_8p0] = reduceBGgetspectra(new_x_8p0_raw, new_y_8p0_raw,800,1400,'r');
 
 %Can add more of the traces, but those left lie at the precipice or past the linear regime. 
 
@@ -76,6 +76,11 @@ hold on;
 [dNdt_0p8, N_0p8] = getcoverageplotcoverage(time(tempSPAN_actual_0p8), signalSPAN_actual_0p8, N0_0p8,'g');
 [dNdt_1p2, N_1p2] = getcoverageplotcoverage(time(tempSPAN_actual_1p2), signalSPAN_actual_1p2, N0_1p2,'b');
 [dNdt_1p6, N_1p6] = getcoverageplotcoverage(time(tempSPAN_actual_1p6), signalSPAN_actual_1p6, N0_1p6, 'm');
+[dNdt_2p0, N_2p0] = getcoverageplotcoverage(time(tempSPAN_actual_2p0), signalSPAN_actual_2p0, N0_2p0, 'm');
+[dNdt_2p8, N_2p8] = getcoverageplotcoverage(time(tempSPAN_actual_2p8), signalSPAN_actual_2p8, N0_2p8, 'm');
+[dNdt_4p0, N_4p0] = getcoverageplotcoverage(time(tempSPAN_actual_4p0), signalSPAN_actual_4p0, N0_4p0, 'm');
+[dNdt_8p0, N_8p0] = getcoverageplotcoverage(time(tempSPAN_actual_8p0), signalSPAN_actual_8p0, N0_8p0, 'm');
+
 
 
 hold off;

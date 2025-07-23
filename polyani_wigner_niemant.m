@@ -12,8 +12,10 @@ tmp_span = tmp(time_span); %independent variable for spectra spanning duration
 %Ea = @(N) Ea_0 - N*y_E;
 %solve coverage differential equation 
 dNdt = @(t, N) -v * N * exp(-Ea_0 / (R * tmp(t))) * exp((w * N / R) * (1/tmp(t) - 1/T_c)); 
-%dNdt = @(t, N) -v * N * exp(-Ea_0 / (R * tmp(t))) * exp(( (N >= 0.25) * w  * (N - 0.25 )/ R ) * (1/tmp(t) - 1/T_c)); %PIECEWISE 'W' 6/30
+%dNdt = @(t, N) -v * N * exp(-Ea_0 / (R * tmp(t))) * exp(( (N >= 0.33) * w  * (N - 0.33 )/ R ) * (1/tmp(t) - 1/T_c)); %PIECEWISE 'W' 6/30
 %dNdt = @(t, N) -v * N * exp(-Ea_0 / (R * tmp(t))) * exp((w^2 * N^2 / R) * (1/tmp(t) - 1/T_c)); 
+
+
 
 options = odeset('RelTol', 1e-13, 'AbsTol', 1e-19); % Adjust tolerances
 [t, N] = ode15s(dNdt, time_span, N_0, options);
