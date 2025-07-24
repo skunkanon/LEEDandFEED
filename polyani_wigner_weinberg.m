@@ -1,0 +1,44 @@
+function [time_span, tmp_span, rate_span,cov_span] = polyani_wigner_weinberg(beta,init_tmp,Ea,preexponent,E_nn, E_nnn,z,N_0,max_tmp)
+%JUL 24, WEINBERG MEAN-FIELD-APPROX OF MONTE CARLO THING
+
+v = preexponent; %pre-exponential
+kB = 1.38 * 10^-23; %J/K boltzmann's
+R = 8.314; %gas constant in J/(K*mol)
+kcal_to_j = 4184; %conversion factor
+E_0 = Ea;
+%y_E = w;
+time_span = linspace(0,(max_tmp - init_tmp)/beta,3000); %array of times from start through whole duration
+%temperature as function of time 
+tmp = @(t) beta*t + init_tmp; %function declaration
+tmp_span = tmp(time_span); %independent variable for spectra spanning duration 
+%coverage-dependent activation energy
+%Ea = @(N) Ea_0 - N*y_E;
+%solve coverage differential equation 
+%dNdt = @(t, N) -v * N * exp(-Ea_0 / (R * tmp(t))) * exp((w * N / R) * (1/tmp(t) - 1/T_c)); 
+%dNdt = @(t, N) -v * N * exp(-Ea_0 / (R * tmp(t))) * exp(( (N >= 0.33) * w  * (N - 0.33 )/ R ) * (1/tmp(t) - 1/T_c)); %PIECEWISE 'W' 6/30
+%dNdt = @(t, N) -v * N * exp(-Ea_0 / (R * tmp(t))) * exp((w^2 * N^2 / R) * (1/tmp(t) - 1/T_c)); 
+
+
+m = @(z) 2*z - 2;
+alpha = @(t) 2 * (1 - exp(-E_nn / (kB * tmp(t) )) );
+theta_AA = @(t, N) N - ( ( 1- (1- alpha(t) * N * (1 - N)) )^0.5) / alpha(t);
+theta_AS = @(t, N) 2 * (1 - (1 - 2*alpha(t) * N * (1-N))^0.5 )/alpha(t);
+theta_SS = @(t, N) 1 - N - (1 - (1 - 2*alpha(t)*N * (1-N)^0.5)) / alpha(t); % NOT USED BUT ALL THETAS SHOULD SUM TO UNITY
+epsil = @(t,N,z) theta_AA(t,N) * ( ( theta_AA(t,N) * exp(E_nn/(kB * tmp(t)) + theta_AS(t,N) * 0.5) ) / N) ^ m(z);
+
+dNdt = @(t,N,z) -v * exp( -(E_0 - 2*z*E_nnn*N) / (kB * tmp(t))) * epsil (t,N,z);
+
+
+
+options = odeset('RelTol', 1e-13, 'AbsTol', 1e-19); % Adjust tolerances
+[t, N] = ode15s(dNdt, time_span, N_0, options);
+%make coords for plot
+rate_span = arrayfun(@(t, N) -dNdt(t, N), t, N);
+cov_span = N;
+%Ea_span = arrayfun(@(N) Ea(N),N);
+[~,I] = max(rate_span);
+%fprintf('max rate= %d\n', max(rate_span));
+%fprintf('\n');
+%fprintf('peak temp= %d\n',tmp_span(I));
+end
+
