@@ -670,10 +670,24 @@ E_0 = 125.52 * 1000; %kJ -> J/mol
 %wein_init_cov = [0.25, 0.5, 0.75, 1];
 k_0 = 10^15; 
 
-[wein_25_time, wein_25_temp, wein_25_rate, ~] = polyani_wigner_weinberg(beta, init_temp, E_0, k_0, 0, 0, 3, 0.25, max_temp);
+[wein_25_time, wein_25_temp, wein_25_rate, wein_25_cov] = polyani_wigner_weinberg(beta, init_temp, E_0, k_0, 0.4 * 4184, 0.4 * 4184, 3, 0.25, max_temp);
+[wein_50_time, wein_50_temp, wein_50_rate, ~] = polyani_wigner_weinberg(beta, init_temp, E_0, k_0, 0.4 * 4184, 0.4 * 4184, 3, 0.5, max_temp);
+[wein_75_time, wein_75_temp, wein_75_rate, ~] = polyani_wigner_weinberg(beta, init_temp, E_0, k_0, 0.4 * 4184, 0.4 * 4184, 3, 0.75, max_temp);
+%[wein_100_time, wein_100_temp, wein_100_rate, ~] = polyani_wigner_weinberg(beta, init_temp, E_0, k_0, 0.4 * 4184, 0.4 * 4184, 3, 1, max_temp);
+
+%Ea_25 = @(N) E_0 - 2*3*0.4*4184* N
+
+figure(1); clf; hold on;
+plot(wein_25_temp, wein_25_rate);
+%plot(wein_50_temp,wein_50_rate);
+%plot(wein_75_temp, wein_75_rate);
+%plot(wein_100_temp, wein_100_rate);
+hold off;
 
 
-
+%clear wein_25_temp
+%clear wein_25_rate
+%clear wein_25_time
 
 %% 6/30 TESTING PIECEWISE 'w' ON 0.46 COVERAGE 
 
