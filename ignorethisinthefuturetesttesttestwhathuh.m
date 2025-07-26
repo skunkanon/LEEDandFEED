@@ -791,5 +791,7 @@ real_params = [60.5 * 4184, 0, 10^13, 0];
 [time_Pd_sim, ~ , rate_Pd_sim, ~] = polyani_wigner_niemant(50, 550, real_params(1), real_params(2), real_params(3), 0.43, 1150, real_params(4));
 plot(time_Pd_sim, rate_Pd_sim);
 hold off;
-%%
+%% 7/26 MONTE CARLO
+
+
 
