@@ -1,104 +1,221 @@
-% TPD Simulation via Kinetic Monte Carlo (Hexagonal Lattice, Set A)
-% Based on Meng & Weinberg (1994)
+function setA_hex = MONTECARLO_HEX_JUL25(theta0, eps_nn, eps_nnn, RATIO)
 
-%clear; clc;
 
-%% --- Parameters (Set A, Hexagonal Lattice) ---
-L = 40;                      % Lattice size (L x L)
-kB = 0.001987;               % Boltzmann constant [kcal/mol/K]
-Ed0 = 31.6;                  % Desorption barrier for isolated molecule [kcal/mol]
-eps_nn = 2.20;               % NN interaction energy [kcal/mol]
-nu = 1e13;                   % Pre-exponential factor [1/s]
-beta = 5;                    % Heating rate [K/s]
-T = 300;                     % Initial temperature [K]
-T_max = 600;                 % Max temperature [K]
-t = 0;                       % Initial time [s]
-theta0 = 0.5;                % Initial coverage
+L = 60;
+kB = 0.001987;         % [kcal/mol/K]
+Ed0 = 31.6;            % Isolated desorption barrier [kcal/mol]
+%eps_nn = 0;          % NN interaction energy [kcal/mol]
+%eps_nnn = 0;           % NNN interaction energy [kcal/mol]
+nu = 1e13;             % Pre-exponential factor [1/s]
+beta = 5;              % Heating rate [K/s]
+T = 200; T_max = 700; dT = 1;
 
-%% --- Initialization ---
-lattice = zeros(L);          % 0 = empty, 1 = occupied
+% --- Initialize lattice ---
+lattice = zeros(L);
 N_sites = L^2;
 N_ads = round(theta0 * N_sites);
-ind_all = randperm(N_sites, N_ads);
-lattice(ind_all) = 1;
+lattice(randperm(N_sites, N_ads)) = 1;
 
-%% --- Neighbor indexing (hexagonal lattice, periodic boundaries) ---
-neighbors = @(i,j) [mod([i-2, i-2, i-1, i+1, i, i]-1, L)+1;
-                    mod([j, j+1, j-1, j+1, j-1, j+1]-1, L)+1];
+% Debug output for initialization
+fprintf('Initialization: L=%d, N_sites=%d, N_ads=%d, theta0=%.3f\n', L, N_sites, N_ads, theta0);
 
-%% --- Simulation Setup ---
-dT = 0.05; % Finer increments for smooth spectrum % Temperature increment per iteration [K]
+% --- Hexagonal lattice offsets ---
+even_nn = [0 -1; 0 1; -1 -1; -1 0; 1 -1; 1 0];
+odd_nn  = [0 -1; 0 1; -1 0; -1 1; 1 0; 1 1];
+even_nnn = [-2 0; -1 -2; -1 2; 0 -2; 0 2; 1 -2; 1 2; 2 0];
+odd_nnn  = [-2 0; -1 -1; -1 1; 0 -2; 0 2; 1 -1; 1 1; 2 0];
+
+% --- Output array ---
 T_range = T:dT:T_max;
-TPD_data = zeros(length(T_range),2);
+setA_hex = zeros(length(T_range), 2);
 idx = 1;
 
 for T = T_range
-    % Surface relaxation (random hops)
-    for sweep = 1:5000
+    % --- Surface diffusion with Metropolis bias ---
+    for sweep = 1:(RATIO*N_ads) %RATIO ORIGINALLY 0.5
         i = randi(L); j = randi(L);
         if lattice(i,j) == 1
-            nei = neighbors(i,j);
+            if mod(i,2)==0
+                offsets = even_nn;
+            else
+                offsets = odd_nn;
+            end
+
             dir = randi(6);
-            ni = nei(1,dir); nj = nei(2,dir);
-            if lattice(ni, nj) == 0
-                lattice(ni, nj) = 1;
-                lattice(i, j) = 0;
+            ni = mod(i + offsets(dir,1)-1, L) + 1;
+            nj = mod(j + offsets(dir,2)-1, L) + 1;
+            if lattice(ni,nj) == 0
+                Ed_initial = Ed0 - eps_nn * count_nn(i, j, lattice, L, even_nn, odd_nn);
+                Ed_final   = Ed0 - eps_nn * count_nn(ni, nj, lattice, L, even_nn, odd_nn);
+                deltaE = Ed_final - Ed_initial;
+                p_move = min(1, exp(-deltaE / (kB * T)));
+                if rand() < p_move
+                    lattice(ni, nj) = 1;
+                    lattice(i, j) = 0;
+                end
             end
         end
     end
 
-    % Compute desorption rates
+    % --- Desorption rates ---
     [rows, cols] = find(lattice == 1);
     N_ads = numel(rows);
-    rates = zeros(N_ads, 1);
+    if N_ads == 0
+        fprintf('All molecules desorbed at T=%.1f K\n', T);
+        break;
+    end
+    rates = zeros(N_ads,1);
 
     for k = 1:N_ads
         i = rows(k); j = cols(k);
-        nei = neighbors(i,j);
-        nn_count = sum(diag(lattice(nei(1,:), nei(2,:))));
-        Ed = Ed0 - nn_count * eps_nn;
+        if mod(i,2)==0
+            nn_off = even_nn;
+            nnn_off = even_nnn;
+        else
+            nn_off = odd_nn;
+            nnn_off = odd_nnn;
+        end
+
+        % Count nearest neighbors
+        nn_count = 0;
+        for n = 1:6
+            ni = mod(i + nn_off(n,1)-1, L) + 1;
+            nj = mod(j + nn_off(n,2)-1, L) + 1;
+            if lattice(ni,nj) == 1
+                nn_count = nn_count + 1;
+            end
+        end
+
+        % Count next-nearest neighbors
+        nnn_count = 0;
+        for n = 1:8
+            ni = mod(i + nnn_off(n,1)-1, L) + 1;
+            nj = mod(j + nnn_off(n,2)-1, L) + 1;
+            if lattice(ni,nj) == 1
+                nnn_count = nnn_count + 1;
+            end
+        end
+
+        % Effective desorption energy
+        Ed = Ed0 - eps_nn * nn_count - eps_nnn * nnn_count;
         rates(k) = nu * exp(-Ed / (kB * T));
     end
 
-    R_tot = sum(rates);
+    % --- Desorption events ---
     dt = dT / beta;
+    R_tot = sum(rates);
+    
+    % Check for valid total rate
+    if R_tot <= 0
+        fprintf('Warning: Zero total rate at T=%.1f K\n', T);
+        break;
+    end
+    
     N_desorb = min(poissrnd(R_tot * dt), N_ads);
 
     if N_desorb > 0
+        % Create cumulative rate array
         cum_rates = cumsum(rates) / R_tot;
-        for des = 1:N_desorb
+        
+        for d = 1:N_desorb
             r = rand();
-            des_index = find(cum_rates >= r, 1);
-            lattice(rows(des_index), cols(des_index)) = 0;
-            rates(des_index) = 0; % avoid choosing the same molecule again
-            cum_rates = cumsum(rates) / sum(rates);
+            idx_sel = find(cum_rates >= r, 1);
+            
+            if isempty(idx_sel)
+                idx_sel = N_ads; % Fallback
+            end
+            
+            % Remove molecule
+            lattice(rows(idx_sel), cols(idx_sel)) = 0;
+            
+            % Update arrays
+            rows(idx_sel) = [];
+            cols(idx_sel) = [];
+            rates(idx_sel) = [];
+            N_ads = N_ads - 1;
+            
+            % Recalculate cumulative rates if there are remaining molecules
+            if N_ads > 0
+                R_tot = sum(rates);
+                if R_tot > 0
+                    cum_rates = cumsum(rates) / R_tot;
+                else
+                    break;
+                end
+            else
+                break;
+            end
         end
     end
 
-    % Record TPD data
+
+
+    %{
+    % --- Post-desorption equilibration step ---
+    for sweep = 1:(RATIO * 3 *N_ads) %ORIGINALLY 1.5
+        i = randi(L); j = randi(L);
+        if lattice(i,j) == 1
+            if mod(i,2)==0
+                offsets = even_nn;
+            else
+                offsets = odd_nn;
+            end
+
+            dir = randi(6);
+            ni = mod(i + offsets(dir,1)-1, L) + 1;
+            nj = mod(j + offsets(dir,2)-1, L) + 1;
+            if lattice(ni,nj) == 0
+                Ed_initial = Ed0 - eps_nn * count_nn(i, j, lattice, L, even_nn, odd_nn);
+                Ed_final   = Ed0 - eps_nn * count_nn(ni, nj, lattice, L, even_nn, odd_nn);
+                deltaE = Ed_final - Ed_initial;
+                p_move = min(1, exp(-deltaE / (kB * T)));
+                if rand() < p_move
+                    lattice(ni, nj) = 1;
+                    lattice(i, j) = 0;
+                end
+            end
+        end
+    end
+    %} 
+    % --- Record coverage vs temperature ---
     coverage = sum(lattice(:)) / N_sites;
-    TPD_data(idx,:) = [T, coverage];
+    setA_hex(idx,:) = [T, coverage];
+    
+    % Debug output every 50 temperature steps
+    if mod(idx, 50) == 0 || coverage < 0.1
+        fprintf('T=%.1f K, Coverage=%.4f, N_ads=%d\n', T, coverage, N_ads);
+    end
+    
     idx = idx + 1;
 
     if coverage <= 0
-        break; % End simulation if surface is empty
+        fprintf('Complete desorption at T=%.1f K\n', T);
+        break;
     end
 end
 
-% Remove unused rows if simulation ends early
-TPD_data(idx:end,:) = [];
+% Trim unused rows from output array
+setA_hex(idx:end,:) = [];
 
-%% --- Plot Results ---
-temp = TPD_data(:,1);
-coverage = TPD_data(:,2);
-rate = -gradient(coverage, temp);
+% Final debug output
+fprintf('Simulation complete. Final coverage: %.4f\n', setA_hex(end,2));
 
-windowSize = 10; % Smoothing window
-rate_smooth = movmean(rate, windowSize);
+end
 
-figure;
-scatter(temp, rate_smooth, 20, 'filled');
-xlabel('Temperature (K)');
-ylabel('Desorption rate (arb. units)');
-title('TPD Spectrum (Hexagonal, Set A, Scatterplot)');
-grid on;
+% --- Helper function ---
+function nn_count = count_nn(i, j, lattice, L, even_nn, odd_nn)
+    if mod(i,2)==0
+        offsets = even_nn;
+    else
+        offsets = odd_nn;
+    end
+
+    nn_count = 0;
+    for n = 1:6
+        ni = mod(i + offsets(n,1) - 1, L) + 1;
+        nj = mod(j + offsets(n,2) - 1, L) + 1;
+        if lattice(ni, nj) == 1
+            nn_count = nn_count + 1;
+        end
+    end
+end

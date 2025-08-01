@@ -15,7 +15,7 @@ dNdt = @(t, N) -v * N * exp(-Ea(N) / (R * tmp(t)));
 options = odeset('RelTol', 1e-13, 'AbsTol', 1e-19); % Adjust tolerances
 [t, N] = ode15s(dNdt, time_span, N_0, options);
 %make coords for plot
-rate_span = arrayfun(@(t, N) -dNdt(t, N), t, N);
+rate_span = arrayfun(@(t, N) -dNdt(t, N), t, N) ./ beta;
 cov_span = N;
 %Ea_span = arrayfun(@(N) Ea(N),N);
 [~,I] = max(rate_span);
