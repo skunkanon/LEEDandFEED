@@ -139,3 +139,36 @@ end
 scatter(unique_temps, mean_gradients, 20, 'filled', 'r');
 
 hold off;
+
+%% 8/4 - TESTING ENERGY VS COVERAGE PLOT
+
+% --- Simulation Parameters ---
+L = 60;
+theta0 = 0.5;
+Ed0 = 1.37;          % in eV (31.6 kcal/mol ≈ 1.37 eV)
+eps_nn = 0.0955;     % 2.2 kcal/mol ≈ 0.0955 eV
+eps_nnn = 0;
+beta = 5;            % K/s
+k0 = 1e13;
+targetCoverage = 0.5;  % for energyStats output (optional)
+
+% --- Run Simulation ---
+[TPD_data, energyStats] = MONTECARLO_HEX2_AUG4(L, theta0, Ed0, eps_nn, eps_nnn, beta, k0, targetCoverage);
+
+
+T = TPD_data(:,1);
+theta = TPD_data(:,2);
+rate = -gradient(theta, T);   % desorption rate ≈ -dθ/dT
+
+figure(4); clf;
+plot(T, rate, 'r', 'LineWidth', 2);
+xlabel('Temperature (K)');
+ylabel('Desorption rate (arb. units)');
+title('TPD Spectrum');
+grid on;
+figure(5); clf;
+scatter(cov_events, Ed_events, 15, 'filled');
+xlabel('Coverage θ');
+ylabel('Activation Energy E_d (eV)');
+title('Coverage-dependent Activation Energy');
+grid on;
