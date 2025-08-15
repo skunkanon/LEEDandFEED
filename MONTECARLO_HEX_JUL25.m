@@ -1,4 +1,4 @@
-function setA_hex = MONTECARLO_HEX_JUL25(theta0, eps_nn, eps_nnn, RATIO)
+function [setA_hex, coverage_array, Ed_array] = MONTECARLO_HEX_JUL25(theta0, eps_nn, eps_nnn, RATIO)
 
 
 L = 60;
@@ -28,6 +28,8 @@ odd_nnn  = [-2 0; -1 -1; -1 1; 0 -2; 0 2; 1 -1; 1 1; 2 0];
 % --- Output array ---
 T_range = T:dT:T_max;
 setA_hex = zeros(length(T_range), 2);
+coverage_array = zeros(length(T_range), 1); % Add: coverage at each T
+Ed_array = zeros(length(T_range), 1);       % Add: avg Ed at each T
 idx = 1;
 
 for T = T_range
@@ -65,6 +67,7 @@ for T = T_range
         break;
     end
     rates = zeros(N_ads,1);
+    Eds = zeros(N_ads,1); % Add: store Ed for each adsorbate
 
     for k = 1:N_ads
         i = rows(k); j = cols(k);
@@ -98,6 +101,7 @@ for T = T_range
 
         % Effective desorption energy
         Ed = Ed0 - eps_nn * nn_count - eps_nnn * nnn_count;
+        Eds(k) = Ed; % Add: store Ed
         rates(k) = nu * exp(-Ed / (kB * T));
     end
 
@@ -180,6 +184,12 @@ for T = T_range
     % --- Record coverage vs temperature ---
     coverage = sum(lattice(:)) / N_sites;
     setA_hex(idx,:) = [T, coverage];
+    coverage_array(idx) = coverage; % Add: store coverage
+    if N_ads > 0
+        Ed_array(idx) = mean(Eds); % Add: store mean Ed
+    else
+        Ed_array(idx) = NaN;
+    end
     
     % Debug output every 50 temperature steps
     if mod(idx, 50) == 0 || coverage < 0.1
@@ -196,6 +206,11 @@ end
 
 % Trim unused rows from output array
 setA_hex(idx:end,:) = [];
+coverage_array(idx:end) = [];
+Ed_array(idx:end) = [];
+
+% Optionally, output as a cell array
+coverage_Ed_cell = {coverage_array, Ed_array};
 
 % Final debug output
 fprintf('Simulation complete. Final coverage: %.4f\n', setA_hex(end,2));

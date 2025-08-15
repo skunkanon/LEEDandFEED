@@ -101,7 +101,7 @@ hold off;
 
 figure(3); clf; hold on; 
 
-runs = 40; % Increase number of runs
+runs = 20; % Increase number of runs
 eps_nn = 2; 
 eps_nnn = 0;
 RATIO = 3; 
@@ -113,7 +113,7 @@ all_temperatures = [];
 all_gradients = [];
 
 for i = 1:runs
-    setA_MC_2 = MONTECARLO_HEX_JUL25(theta,eps_nn,eps_nnn, RATIO);
+    [setA_MC_2, ~, ~] = MONTECARLO_HEX_JUL25(theta,eps_nn,eps_nnn, RATIO);
     
     % Calculate gradient for this run
     temperatures = setA_MC_2(:,1);
@@ -140,35 +140,112 @@ scatter(unique_temps, mean_gradients, 20, 'filled', 'r');
 
 hold off;
 
+
 %% 8/4 - TESTING ENERGY VS COVERAGE PLOT
+fprintf('NEW INSTANCE \n');
 
-% --- Simulation Parameters ---
-L = 60;
-theta0 = 0.5;
-Ed0 = 1.37;          % in eV (31.6 kcal/mol ≈ 1.37 eV)
-eps_nn = 0.0955;     % 2.2 kcal/mol ≈ 0.0955 eV
+
+runs = 20;
+eps_nn = 2; 
 eps_nnn = 0;
-beta = 5;            % K/s
-k0 = 1e13;
-targetCoverage = 0.5;  % for energyStats output (optional)
+RATIO = 3; 
+theta = 0.5;
 
-% --- Run Simulation ---
-[TPD_data, energyStats] = MONTECARLO_HEX2_AUG4(L, theta0, Ed0, eps_nn, eps_nnn, beta, k0, targetCoverage);
+all_coverages = [];
+all_Eds = [];
 
+for i = 1:runs
+    % Get coverage and Ed arrays from the function
+    [~, coverage_array, Ed_array] = MONTECARLO_HEX_JUL25(theta, eps_nn, eps_nnn, RATIO);
+    
+    % Store results
+    all_coverages = [all_coverages; coverage_array(:)];
+    all_Eds = [all_Eds; Ed_array(:)];
+end
 
-T = TPD_data(:,1);
-theta = TPD_data(:,2);
-rate = -gradient(theta, T);   % desorption rate ≈ -dθ/dT
+% Average coverage for each unique Ed value
+unique_Eds = unique(all_Eds(~isnan(all_Eds)));
+mean_coverages = zeros(size(unique_Eds));
 
-figure(4); clf;
-plot(T, rate, 'r', 'LineWidth', 2);
-xlabel('Temperature (K)');
-ylabel('Desorption rate (arb. units)');
-title('TPD Spectrum');
+for idx = 1:length(unique_Eds)
+    ed_val = unique_Eds(idx);
+    indices = find(all_Eds == ed_val);
+    mean_coverages(idx) = mean(all_coverages(indices));
+end
+
+% Plot averaged result
+figure(4); clf; hold on;
+scatter(mean_coverages, unique_Eds, 5, 'b', 'filled');
+ylabel('Average Activation Energy, E_d (kcal/mol)');
+xlabel('Coverage, \theta');
+title('Coverage vs Average Activation Energy (Averaged)');
 grid on;
+hold off;
+%% 8/4 - PLOTTING BOTH RATE v TEMP & COVERAGEvEA 
+
+% Combined Monte Carlo TPD Analysis: Rate vs Temp and Ed vs Coverage
+
 figure(5); clf;
-scatter(cov_events, Ed_events, 15, 'filled');
-xlabel('Coverage θ');
-ylabel('Activation Energy E_d (eV)');
-title('Coverage-dependent Activation Energy');
+
+runs = 50;
+eps_nn = 0; 
+eps_nnn = 2;
+RATIO = 3; 
+theta = 0.5;
+
+% Initialize arrays to store all results
+all_temperatures = [];
+all_gradients = [];
+all_coverages = [];
+all_Eds = [];
+
+for i = 1:runs
+    [setA_MC_2, coverage_array, Ed_array] = MONTECARLO_HEX_JUL25(theta, eps_nn, eps_nnn, RATIO);
+    
+    % --- For Rate vs Temp ---
+    temperatures = setA_MC_2(:,1);
+    coverage = setA_MC_2(:,2);
+    gradient_vals = -gradient(coverage, temperatures);
+    all_temperatures = [all_temperatures; temperatures];
+    all_gradients = [all_gradients; gradient_vals];
+    
+    % --- For Ed vs Coverage ---
+    all_coverages = [all_coverages; coverage_array(:)];
+    all_Eds = [all_Eds; Ed_array(:)];
+end
+
+% --- Process Rate vs Temp ---
+unique_temps = unique(all_temperatures);
+mean_gradients = zeros(size(unique_temps));
+for temp_idx = 1:length(unique_temps)
+    temp = unique_temps(temp_idx);
+    temp_indices = find(all_temperatures == temp);
+    mean_gradients(temp_idx) = mean(all_gradients(temp_indices));
+end
+
+% --- Process Ed vs Coverage ---
+unique_coverages = unique(all_coverages(~isnan(all_coverages)));
+mean_Eds = zeros(size(unique_coverages));
+for idx = 1:length(unique_coverages)
+    cov_val = unique_coverages(idx);
+    indices = find(all_coverages == cov_val);
+    mean_Eds(idx) = mean(all_Eds(indices));
+end
+
+% --- Plot as subplots ---
+subplot(1,2,1); % Left plot: Rate vs Temp
+scatter(unique_temps, mean_gradients, 20, 'filled', 'r');
+xlabel('Temperature (K)');
+ylabel('-d\theta/dT');
+title('Averaged Rate vs Temperature');
 grid on;
+
+subplot(1,2,2); % Right plot: Ed vs Coverage
+scatter(unique_coverages, mean_Eds, 5, 'b', 'filled');
+xlabel('Coverage, \theta');
+ylabel('Average Activation Energy, E_d (kcal/mol)');
+title('Average Activation Energy vs Coverage (Averaged)');
+grid on;
+
+sgtitle('Monte Carlo TPD Simulation Results');
+%%
