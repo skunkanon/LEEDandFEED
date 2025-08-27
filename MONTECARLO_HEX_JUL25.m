@@ -1,7 +1,7 @@
 function [setA_hex, coverage_array, Ed_array] = MONTECARLO_HEX_JUL25(theta0, eps_nn, eps_nnn, RATIO)
 
 
-L = 60;
+L = 100;
 kB = 0.001987;         % [kcal/mol/K]
 Ed0 = 31.6;            % Isolated desorption barrier [kcal/mol]
 %eps_nn = 0;          % NN interaction energy [kcal/mol]
@@ -109,12 +109,7 @@ for T = T_range
     dt = dT / beta;
     R_tot = sum(rates);
     
-    % Check for valid total rate
-    if R_tot <= 0
-        fprintf('Warning: Zero total rate at T=%.1f K\n', T);
-        break;
-    end
-    
+
     N_desorb = min(poissrnd(R_tot * dt), N_ads);
 
     if N_desorb > 0

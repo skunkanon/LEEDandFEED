@@ -187,11 +187,11 @@ hold off;
 
 figure(5); clf;
 
-runs = 50;
-eps_nn = 0; 
-eps_nnn = 2;
+runs = 30;
+eps_nn = 2; 
+eps_nnn = 0;
 RATIO = 3; 
-theta = 0.5;
+theta = 0.1;
 
 % Initialize arrays to store all results
 all_temperatures = [];
