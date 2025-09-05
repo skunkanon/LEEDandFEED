@@ -800,33 +800,33 @@ runs=1;
 
 for i = 1:runs
 setA_MC = TESTJUL29(0.25);
-scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 10, 'filled', 'r', 'DisplayName', 'Coverage = 0.25');
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'r', 'DisplayName', 'Coverage = 0.25');
 end
-[~ ,p25_tmp, p25_rate, ~] = polyani_wigner(1, 300, 30*4184, 0 , 10^15, 0.25,500 );
+[~ ,p25_tmp, p25_rate, ~] = polyani_wigner(5, 300, 30*4184, 0 , 10^13, 0.25,600 );
 plot(p25_tmp,p25_rate, 'r');
 
 for i = 1:runs
 setA_MC = TESTJUL29(0.5);
-scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 10, 'filled', 'g', 'DisplayName', 'Coverage = 0.50');
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'g', 'DisplayName', 'Coverage = 0.50');
 
 end
-[~ ,p50_tmp, p50_rate, ~] = polyani_wigner(1, 300, 30*4184, 10 , 10^15, 0.5,500 );
+[~ ,p50_tmp, p50_rate, ~] = polyani_wigner(5, 300, 30*4184, 10 , 10^13, 0.5,600 );
 plot(p50_tmp,p50_rate, 'g');
 
 for i = 1:runs
 setA_MC = TESTJUL29(0.75);
-scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 10, 'filled', 'b', 'DisplayName', 'Coverage = 0.75');
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'b', 'DisplayName', 'Coverage = 0.75');
 
 end
-[~ ,p75_tmp, p75_rate, ~] = polyani_wigner(1, 300, 30*4184, 0 , 10^15, 0.75,500 );
+[~ ,p75_tmp, p75_rate, ~] = polyani_wigner(5, 300, 30*4184, 0 , 10^13, 0.75,600 );
 plot(p75_tmp,p75_rate, 'b');
 
 for i = 1:runs
 setA_MC = TESTJUL29(1);
-scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 10, 'filled', 'm', 'DisplayName', 'Coverage = 1');
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'm', 'DisplayName', 'Coverage = 1');
 
 end
-[~ ,p0_tmp, p0_rate, ~] = polyani_wigner(1, 300, 30*4184, 0 , 10^15, 1,500 );
+[~ ,p0_tmp, p0_rate, ~] = polyani_wigner(5, 300, 30*4184, 0 , 10^13, 1,600 );
 plot(p0_tmp,p0_rate, 'm');
 
 
@@ -837,4 +837,210 @@ title('Triangular Lattice 2nd Order');
 legend show;
 grid on;
 
-%general shape checks out but the
+%general shape checks out but the peak temperatures are off 7/30. could
+%revisit. their 2nd order paper has the triangular lattice, but first order
+%doesn't. 
+
+%7/30 - changed to 1st order 
+%7/31 - added debug statements, can only really replicate 
+
+%% 7/30 - 1st order HEX (ACTUAL)  
+
+theta0 = 0.1; % try 0.25, 0.33, 0.5, 0.66
+data = MONTECARLO_HEX_JUL25(theta0);
+dTheta_dT = -gradient(data(:,2), data(:,1));
+
+figure(2); clf; hold on;
+
+scatter(data(:,1), dTheta_dT, 20, 'filled', 'DisplayName', sprintf('\\theta_0 = %.2f', theta0));
+%[~ ,p25_tmp, p25_rate, ~] = polyani_wigner(5, 300, 31.6*4184, 0 , 10^13, 0.3,700 );
+%plot(p25_tmp,p25_rate, 'r');
+
+theta0 = 0.2;
+data = MONTECARLO_HEX_JUL25(theta0);
+dTheta_dT = -gradient(data(:,2), data(:,1));
+scatter(data(:,1), dTheta_dT, 20, 'filled', 'DisplayName', sprintf('\\theta_0 = %.2f', theta0));
+
+
+theta0=0.3;
+data = MONTECARLO_HEX_JUL25(theta0);
+dTheta_dT = -gradient(data(:,2), data(:,1));
+scatter(data(:,1), dTheta_dT, 20, 'filled', 'DisplayName', sprintf('\\theta_0 = %.2f', theta0));
+
+
+theta0=0.4;
+data = MONTECARLO_HEX_JUL25(theta0);
+dTheta_dT = -gradient(data(:,2), data(:,1));
+scatter(data(:,1), dTheta_dT, 20, 'filled', 'DisplayName', sprintf('\\theta_0 = %.2f', theta0));
+
+
+
+theta0=0.5;
+data = MONTECARLO_HEX_JUL25(theta0);
+dTheta_dT = -gradient(data(:,2), data(:,1));
+scatter(data(:,1), dTheta_dT, 20, 'filled', 'DisplayName', sprintf('\\theta_0 = %.2f', theta0));
+
+
+theta0=0.6;
+data = MONTECARLO_HEX_JUL25(theta0);
+dTheta_dT = -gradient(data(:,2), data(:,1));
+scatter(data(:,1), dTheta_dT, 20, 'filled', 'DisplayName', sprintf('\\theta_0 = %.2f', theta0));
+
+hold off;
+xlabel('Temperature (K)');
+ylabel('Desorption Rate');
+title('TPD Spectrum: 1st Order Desorption on Hexagonal Lattice (Set E)');
+legend show; grid on; 
+ax = gca;
+ax.YAxis.Exponent = 0;  % Removes scientific notation
+ax.YAxis.TickLabelFormat = '%.4f';  
+%7/30 - Lines up with polyani-wigner at 0 interaction energy (nn and nnn)
+%Gets peak temperature right but not the general shape 
+
+
+%% 7/31 - SET A FIGURE 1 TEST
+
+figure(3); clf; hold on; 
+
+theta0 = 0.6;
+data = MONTECARLO_HEX_JUL25(theta0);
+dTheta_dT = -gradient(data(:,2), data(:,1));
+scatter(data(:,1), dTheta_dT, 20, 'filled', 'DisplayName', sprintf('\\theta_0 = %.2f', theta0));
+
+hold off;
+
+
+
+
+
+%% 7/30 - ACTUAL ACTUAL 1ST ORDER 
+
+fprintf('NEW INSTANCE \n')
+figure(3); clf;
+hold on;
+
+runs=1;
+
+for i = 1:runs
+setA_MC = MC_TRI_TEST(0.25);
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'r', 'DisplayName', 'Coverage = 0.25');
+end
+[~ ,p25_tmp, p25_rate, ~] = polyani_wigner(5, 300, 30*4184, 0 , 10^13, 0.25,600 );
+plot(p25_tmp,p25_rate, 'r');
+
+for i = 1:runs
+setA_MC = MC_TRI_TEST(0.5);
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'g', 'DisplayName', 'Coverage = 0.50');
+
+end
+[~ ,p50_tmp, p50_rate, ~] = polyani_wigner(5, 300, 30*4184, 0 , 10^13, 0.5,600 );
+plot(p50_tmp,p50_rate, 'g');
+
+for i = 1:runs
+setA_MC = MC_TRI_TEST(0.75);
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'b', 'DisplayName', 'Coverage = 0.75');
+
+end
+[~ ,p75_tmp, p75_rate, ~] = polyani_wigner(5, 300, 30*4184, 0 , 10^13, 0.75,600 );
+plot(p75_tmp,p75_rate, 'b');
+
+for i = 1:runs
+setA_MC = MC_TRI_TEST(1);
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'm', 'DisplayName', 'Coverage = 1');
+
+end
+[~ ,p0_tmp, p0_rate, ~] = polyani_wigner(5, 300, 30*4184, 0 , 10^13, 1,600 );
+plot(p0_tmp,p0_rate, 'm');
+
+
+hold off;
+xlabel('Temperature (K)');
+ylabel('Desorption rate');
+title('Triangular Lattice 2nd Order');
+legend show;
+grid on;
+%% 7/26 MONTE CARLO TEST 730
+
+figure(1); clf;
+hold on;
+
+setA_MC = MC_TRI_TEST(0.25);
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'r', 'DisplayName', 'Coverage = 0.25');
+
+[~ ,p25_tmp, p25_rate, ~] = polyani_wigner(1, 300, 30*4184, 0 , 10^15, 0.25,500 );
+plot(p25_tmp,p25_rate, 'r');
+
+
+setA_MC = MC_TRI_TEST(0.5);
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'g', 'DisplayName', 'Coverage = 0.50');
+[~ ,p50_tmp, p50_rate, ~] = polyani_wigner(1, 300, 30*4184, 0 , 10^15, 0.5,500 );
+plot(p50_tmp,p50_rate, 'g');
+
+
+setA_MC = MC_TRI_TEST(0.75);
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'b', 'DisplayName', 'Coverage = 0.75');
+[~ ,p75_tmp, p75_rate, ~] = polyani_wigner(1, 300, 30*4184, 0 , 10^15, 0.75,500 );
+plot(p75_tmp,p75_rate, 'b');
+
+
+
+
+setA_MC = MC_TRI_TEST(1);
+scatter(setA_MC(:,1), -gradient(setA_MC(:,2), setA_MC(:,1)), 20, 'filled', 'm', 'DisplayName', 'Coverage = 1');
+[~ ,p0_tmp, p0_rate, ~] = polyani_wigner(1, 300, 30*4184, 0 , 10^15, 1,500 );
+plot(p0_tmp,p0_rate, 'm');
+
+
+hold off;
+xlabel('Temperature (K)');
+ylabel('Desorption rate');
+title('Simulated TPD Spectrum (Set A - Triangular Lattice)');
+legend show;
+grid on;
+
+%% SEP 04, STEP TPD TEST 
+
+
+%exp_data{1} = {time(tempSPAN_actual_0p4), dNdt_0p4, N0_0p4, std_0p4};
+%exp_data{2} = {time(tempSPAN_actual_0p8), dNdt_0p8, N0_0p8, std_0p8};
+%exp_data{3} = {time(tempSPAN_actual_1p2), dNdt_1p2, N0_1p2, std_1p2};
+%exp_data{4} = {time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6, std_1p6};
+
+real_params = [170 * 1000, 24 * 1000 , 2*10^7, 10^10];
+
+beta = 10^-3;
+init_tmp = 1200;
+fin_tmp = init_tmp + beta * 10;
+
+[time_sim_0p4, ~, rate_sim_0p4, ~] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.1, fin_tmp, real_params(4));
+[time_sim_0p8, ~, rate_sim_0p8, cov_span_0p8] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.2, fin_tmp, real_params(4));
+[time_sim_1p2, temp_sim_1p2, rate_sim_1p2, cov_span_1p2] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.3, fin_tmp, real_params(4));
+[time_sim_1p6, ~, rate_sim_1p6, cov_span_1p6] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.4, fin_tmp, real_params(4));
+
+figure(1); clf
+hold on;
+
+%plot(time(tempSPAN_actual_0p4), dNdt_0p4, 'm', 'DisplayName', '0.1 Coverage, Experimental');
+plot(time_sim_0p4, rate_sim_0p4,'m', 'DisplayName', '0.1 Coverage, Sim');
+
+%plot(time(tempSPAN_actual_0p8), dNdt_0p8, 'b', 'DisplayName', '0.2 Coverage, Experimental');
+plot(time_sim_0p8, rate_sim_0p8,'b', 'DisplayName', '0.2 Coverage, Sim');
+%plot(time_sim_0p8, cov_span_0p8, 'b', 'LineWidth', 3);
+
+%plot(time(tempSPAN_actual_1p2), dNdt_1p2, 'g', 'DisplayName', '0.3 Coverage, Experimental');
+plot(time_sim_1p2, rate_sim_1p2, 'g','DisplayName','0.3 Coverage, Sim');
+%plot(time_sim_1p2, cov_span_1p2,'g', 'LineWidth', 3);
+
+%plot(time(tempSPAN_actual_1p6), dNdt_1p6, 'r', 'DisplayName', '0.4 Coverage, Experimental');
+plot(time_sim_1p6, rate_sim_1p6,'r', 'DisplayName','0.4 Coverage, Sim');
+%plot(time_sim_1p6, rate_sim_1p6, 'r')
+
+
+legend('show', 'FontSize', 14,'Location', 'best');
+title(sprintf('Cl/Rh(111) Step TPD, 300 K -> %.0f K', init_tmp));
+xlabel('Time (s)');
+ylabel('Rate')
+hold off;
+
+%%
+plot(time_sim_1p2, temp_sim_1p2);

@@ -997,3 +997,83 @@ ylabel('Desorption rate');
 title('Simulated TPD Spectrum (Set A - Triangular Lattice)');
 legend show;
 grid on;
+
+%% SEP 04, STEP TPD TEST 
+
+
+%exp_data{1} = {time(tempSPAN_actual_0p4), dNdt_0p4, N0_0p4, std_0p4};
+%exp_data{2} = {time(tempSPAN_actual_0p8), dNdt_0p8, N0_0p8, std_0p8};
+%exp_data{3} = {time(tempSPAN_actual_1p2), dNdt_1p2, N0_1p2, std_1p2};
+%exp_data{4} = {time(tempSPAN_actual_1p6), dNdt_1p6, N0_1p6, std_1p6};
+
+real_params = [170 * 1000, 24 * 1000 , 2*10^7, 10^10];
+
+beta = 10^-3;
+init_tmp = 1300;
+fin_tmp = init_tmp + beta * 20;
+
+[time_sim_0p4, ~, rate_sim_0p4, ~] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.1, fin_tmp, real_params(4));
+[time_sim_0p8, ~, rate_sim_0p8, cov_span_0p8] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.2, fin_tmp, real_params(4));
+[time_sim_1p2, temp_sim_1p2, rate_sim_1p2, cov_span_1p2] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.3, fin_tmp, real_params(4));
+[time_sim_1p6, ~, rate_sim_1p6, cov_span_1p6] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.4, fin_tmp, real_params(4));
+
+figure(1); clf
+hold on;
+
+%plot(time(tempSPAN_actual_0p4), dNdt_0p4, 'm', 'DisplayName', '0.1 Coverage, Experimental');
+plot(time_sim_0p4, rate_sim_0p4,'m', 'DisplayName', '0.1 Coverage, Sim');
+
+%plot(time(tempSPAN_actual_0p8), dNdt_0p8, 'b', 'DisplayName', '0.2 Coverage, Experimental');
+plot(time_sim_0p8, rate_sim_0p8,'b', 'DisplayName', '0.2 Coverage, Sim');
+%plot(time_sim_0p8, cov_span_0p8, 'b', 'LineWidth', 3);
+
+%plot(time(tempSPAN_actual_1p2), dNdt_1p2, 'g', 'DisplayName', '0.3 Coverage, Experimental');
+plot(time_sim_1p2, rate_sim_1p2, 'g','DisplayName','0.3 Coverage, Sim');
+%plot(time_sim_1p2, cov_span_1p2,'g', 'LineWidth', 3);
+
+%plot(time(tempSPAN_actual_1p6), dNdt_1p6, 'r', 'DisplayName', '0.4 Coverage, Experimental');
+plot(time_sim_1p6, rate_sim_1p6,'r', 'DisplayName','0.4 Coverage, Sim');
+%plot(time_sim_1p6, rate_sim_1p6, 'r')
+
+
+legend('show', 'FontSize', 14,'Location', 'best');
+title(sprintf('Cl/Rh(111) Step TPD, 300 K -> %.0f K', init_tmp));
+xlabel('Time (s)');
+ylabel('Rate (coverage/s)');
+hold off;
+
+%%
+
+beta = 10^-3;
+init_tmp = 1000;
+fin_tmp = init_tmp + beta * 120;
+
+[time_sim_0p4, ~, rate_sim_0p4, cov_span_0p4] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.1, fin_tmp, real_params(4));
+[time_sim_0p8, ~, rate_sim_0p8, cov_span_0p8] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.2, fin_tmp, real_params(4));
+[time_sim_1p2, temp_sim_1p2, rate_sim_1p2, cov_span_1p2] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.3, fin_tmp, real_params(4));
+[time_sim_1p6, ~, rate_sim_1p6, cov_span_1p6] = polyani_wigner_niemant(beta, init_tmp, real_params(1), real_params(2), real_params(3), 0.4, fin_tmp, real_params(4));
+
+figure(2); clf
+hold on;
+
+%plot(time(tempSPAN_actual_0p4), dNdt_0p4, 'm', 'DisplayName', '0.1 Coverage, Experimental');
+plot(time_sim_0p4, cov_span_0p4,'m', 'DisplayName', '0.1 Coverage, Sim');
+
+%plot(time(tempSPAN_actual_0p8), dNdt_0p8, 'b', 'DisplayName', '0.2 Coverage, Experimental');
+plot(time_sim_0p8, cov_span_0p8,'b', 'DisplayName', '0.2 Coverage, Sim');
+%plot(time_sim_0p8, cov_span_0p8, 'b', 'LineWidth', 3);
+
+%plot(time(tempSPAN_actual_1p2), dNdt_1p2, 'g', 'DisplayName', '0.3 Coverage, Experimental');
+plot(time_sim_1p2, cov_span_1p2, 'g','DisplayName','0.3 Coverage, Sim');
+%plot(time_sim_1p2, cov_span_1p2,'g', 'LineWidth', 3);
+
+%plot(time(tempSPAN_actual_1p6), dNdt_1p6, 'r', 'DisplayName', '0.4 Coverage, Experimental');
+plot(time_sim_1p6, cov_span_1p6,'r', 'DisplayName','0.4 Coverage, Sim');
+%plot(time_sim_1p6, rate_sim_1p6, 'r')
+
+
+legend('show', 'FontSize', 14,'Location', 'best');
+title(sprintf('Cl/Rh(111) Step TPD, 300 K -> %.0f K', init_tmp));
+xlabel('Time (s)');
+ylabel('Coverage');
+hold off;
