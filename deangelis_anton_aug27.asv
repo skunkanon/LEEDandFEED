@@ -7,6 +7,16 @@ kap_w = 0.81; % k / m_w * c_w, fast inverse time constant, s^-1
 rho = 1900; % 'effective wire resistivity for rapid heating, i_max^2 * R / m_w * c_w
 fprintf('kappa_w / rho = %4e \n', kap_w/rho);
 
+% Feed-forward heater model: wire ↔ crystal (Ni(110) example)
+% constants (your values)
+R_gas = 8.314;           % J/mol/K   (not used here)
+T_b   = 80;              % K  (cooling block)
+kap_a = 0.049;           % s^-1  = k/(m_a C_a)    slow (crystal) rate
+kap_w = 0.81;            % s^-1  = k/(m_w C_w)    fast (wire) rate
+rho   = 1900;            % K/s   = i_max^2 R/(m_w C_w)  ("p" in paper)
+
+fprintf('kappa_w / rho = %g K^-1\n', kap_w/rho);
+
 % time and input
 t_on   = 2.0;            % s   heating pulse length
 t_end  = 8.0;            % s   simulation horizon
