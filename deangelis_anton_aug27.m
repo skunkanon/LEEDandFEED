@@ -4,8 +4,8 @@
 
 molarheatcap_Ta = 25.36; %J/mol K 
 atomicmass_Ta = 180.947; %g/mol
-length_wire = 0.005 * 1; %m, original 0.005 
-diameter_wire = 0.0006 * 1; %m, original 0.0006
+length_wire = 0.005 ; %m, original 0.005 
+diameter_wire = 0.0006 * 0.7; %m, original 0.0006
 area_wire = pi() * (diameter_wire/2)^2; %2.8 * 10^-7 m^2 
 
 conduct_Ta = 57.5; %W/ m*K
@@ -99,7 +99,7 @@ hold off;
 
 %% 9/16 - OVERLAYING CRYSTAL TEMP VS TIME AND DIAMETER AND ALL 
 
-figure(2);
+figure(3);
 hold on;
 plot(t, T_a, 'LineWidth', 2, ...
      'DisplayName', sprintf('Length = %.2e, Diameter = %.2e', length_wire, diameter_wire));
@@ -111,60 +111,4 @@ legend show;
 
 
 
-
-%% 9/15 - LENGTH OR AREA VS MAX HEATING RATE 
-
-% Length span (m)
-L_vec = linspace(1e-3, 50e-3, 40);      % 1 mm -> 200 mm
-
-% Diameters
-d_vec = linspace(0.0006, 0.001, 10); 
-
-% Storage: rows = diameters, cols = lengths
-max_dTadt_mat = zeros(numel(d_vec), numel(L_vec));
-
-for id = 1:numel(d_vec)
-    d = d_vec(id);
-    A = pi*(d/2)^2;                     % m^2
-
-    for k = 1:numel(L_vec)
-        L = L_vec(k);
-
-        % Geometry-dependent kappa_w for this L, d
-        conduct_wire = conduct_Ta * (A / L);                         % W/K
-        mass_wire_g  = density_Ta * L * A * 1e6;                    % g
-        heatcap_wire = (mass_wire_g / atomicmass_Ta) * molarheatcap_Ta; % J/K
-        kap_w_local  = conduct_wire / heatcap_wire;                  % s^-1
-
-        % ODE with this geometry's kap_w; same structure as your second section
-        odefun_geo = @(t,y) [ ...
-            rho*I(t) - kap_w_local*(y(1) - y(2)) - kap_w_local*(y(1) - T_b); ... % dT_w/dt
-            kap_a*(y(1) - y(2))                                                   % dT_a/dt (crystal)
-        ];
-
-        % Solve
-        [tL, yL] = ode45(odefun_geo, [0 t_end], y0, opts);
-
-        % Compute instantaneous crystal heating rate along the trajectory
-        dTadt = zeros(size(tL));
-        for j = 1:numel(tL)
-            dy = odefun_geo(tL(j), yL(j,:).');   % dy = [dT_w/dt; dT_a/dt]
-            dTadt(j) = dy(2);
-        end
-
-        % Max crystal heating rate while current is ON
-        on_idx = tL <= (t_on + 1e-9);
-        max_dTadt_mat(id, k) = max(dTadt(on_idx));
-    end
-end
-
-% Plot
-figure; hold on; grid on;
-for id = 1:numel(d_vec)
-    plot(L_vec*1e3, max_dTadt_mat(id,:), 'LineWidth', 1.8);
-end
-xlabel('Wire length L (mm)');
-ylabel('Max crystal heating rate (K/s)');
-legtxt = arrayfun(@(d) sprintf('d = %.2f mm', d*1e3), d_vec, 'UniformOutput', false);
-legend(legtxt, 'Location', 'northeast');
-title('Max crystal heating rate vs wire dimensions');
+%%
