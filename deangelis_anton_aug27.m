@@ -5,7 +5,7 @@
 molarheatcap_Ta = 25.36; %J/mol K 
 atomicmass_Ta = 180.947; %g/mol
 length_wire = 0.005 ; %m, original 0.005 
-diameter_wire = 0.0006 * 0.7; %m, original 0.0006
+diameter_wire = 0.0006 ; %m, original 0.0006
 area_wire = pi() * (diameter_wire/2)^2; %2.8 * 10^-7 m^2 
 
 conduct_Ta = 57.5; %W/ m*K
@@ -30,20 +30,12 @@ kap_w = kapp_w; %kappa_w derived from dimensions as opposed to fit
 
 
 
-% GEOMETRY MOD
-n_wires      = 1;                 % # of identical wires in parallel
-rho_elec_Ta  = 1.31e-7;           % ohm * m (for Ta @ 300K)
-Cp_mass_Ta   = (molarheatcap_Ta/atomicmass_Ta)*1000;   % J/(kg·K)
-rho_mass_Ta  = density_Ta*1000;   % kg/m^3
+% GEOMETRY MOD, DISPLACING RHO = 1900 INDEPENDENT OF WIRE DIAMETER
+rho_elec_Ta  = 1.348e-7;           % ohm * m (for Ta @ 300K)
+R     = rho_elec_Ta * length_wire / area_wire;  % ohm 
+I_max = 40;                 
+rho   = (I_max^2 * R) / heatcap_wire;    % K/s when input=1
 
-R_single     = rho_elec_Ta * length_wire / area_wire;  % ohm (one wire)
-R_total      = R_single / n_wires;                     % ohm (parallel)
-heatcap_total= n_wires * heatcap_wire;                 % J/K (both wires)
-
-I_amp        = 40;                  % example amplitude (A)
-rho_constI   = (I_amp^2 * R_total) / heatcap_total;    % K/s when input=1
-
-rho = rho_constI;   
 
 
 %rho = 1900; % 'effective wire resistivity for rapid heating, i_max^2 * R / m_w * c_w
@@ -99,7 +91,7 @@ hold off;
 
 %% 9/16 - OVERLAYING CRYSTAL TEMP VS TIME AND DIAMETER AND ALL 
 
-figure(3);
+figure(2);
 hold on;
 plot(t, T_a, 'LineWidth', 2, ...
      'DisplayName', sprintf('Length = %.2e, Diameter = %.2e', length_wire, diameter_wire));
