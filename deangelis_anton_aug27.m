@@ -4,8 +4,8 @@
 
 molarheatcap_Ta = 25.36; %J/mol K 
 atomicmass_Ta = 180.947; %g/mol
-length_wire = 0.005 ; %m, original 0.005 
-diameter_wire = 0.0006 ; %m, original 0.0006
+length_wire = 0.01 ; %m, original 0.005 
+diameter_wire = 0.0003; %m, original 0.0006
 area_wire = pi() * (diameter_wire/2)^2; %2.8 * 10^-7 m^2 
 
 conduct_Ta = 57.5; %W/ m*K
