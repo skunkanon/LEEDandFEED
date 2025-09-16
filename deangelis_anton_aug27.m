@@ -4,12 +4,12 @@
 
 molarheatcap_Ta = 25.36; %J/mol K 
 atomicmass_Ta = 180.947; %g/mol
-length_wire = 0.005; %m, original 0.005 
-diameter_wire = 0.0006 * 10; %m, original 0.0006
+length_wire = 0.005 * 1; %m, original 0.005 
+diameter_wire = 0.0006 * 1; %m, original 0.0006
 area_wire = pi() * (diameter_wire/2)^2; %2.8 * 10^-7 m^2 
 
 conduct_Ta = 57.5; %W/ m*K
-conduct_wire = conduct_Ta * (area_wire/length_wire); %1/ohm, ~3.3 x 10^-3
+conduct_wire = conduct_Ta * (area_wire/length_wire); %W/K, ~3.3 x 10^-3
 
 density_Ta = 16.678; %g/cm^3
 mass_wire = density_Ta * length_wire * area_wire * 10^6;
@@ -26,7 +26,27 @@ T_b = 80; %cooling block temp, K
 kap_a = 0.049; % k / m_a * c_a, slow inverse time constant, s^-1 
 kap_w = kapp_w; %kappa_w derived from dimensions as opposed to fit
 %kap_w = 0.81; % k / m_w * c_w, fast inverse time constant, s^-1 GIVEN 
-rho = 1900; % 'effective wire resistivity for rapid heating, i_max^2 * R / m_w * c_w
+
+
+
+
+% GEOMETRY MOD
+n_wires      = 1;                 % # of identical wires in parallel
+rho_elec_Ta  = 1.31e-7;           % ohm * m (for Ta @ 300K)
+Cp_mass_Ta   = (molarheatcap_Ta/atomicmass_Ta)*1000;   % J/(kg·K)
+rho_mass_Ta  = density_Ta*1000;   % kg/m^3
+
+R_single     = rho_elec_Ta * length_wire / area_wire;  % ohm (one wire)
+R_total      = R_single / n_wires;                     % ohm (parallel)
+heatcap_total= n_wires * heatcap_wire;                 % J/K (both wires)
+
+I_amp        = 40;                  % example amplitude (A)
+rho_constI   = (I_amp^2 * R_total) / heatcap_total;    % K/s when input=1
+
+rho = rho_constI;   
+
+
+%rho = 1900; % 'effective wire resistivity for rapid heating, i_max^2 * R / m_w * c_w
 fprintf('kappa_w / rho = %4e \n', kap_w/rho);
 
 % time and input
@@ -41,7 +61,7 @@ odefun = @(t,y) [ ...
     kap_a*(y(1) - y(2))                                    % dT_a/dt
 ];
 
-figure;
+figure(1);
 hold on;
 
 y0 = [200; 200];                 % K  initial wire & crystal temps
@@ -77,6 +97,20 @@ hold off;
 
 % ^ CURRENT IS SCALED AS (CURRENT_ACTUAL/CURRENT_MAX)^2
 
+%% 9/16 - OVERLAYING CRYSTAL TEMP VS TIME AND DIAMETER AND ALL 
+
+figure(2);
+hold on;
+plot(t, T_a, 'LineWidth', 2, ...
+     'DisplayName', sprintf('Length = %.2e, Diameter = %.2e', length_wire, diameter_wire));
+xlabel('time (s)');
+ylabel('T_{Ni} (K)');
+title('T_{Ni}(t)');
+grid on;
+legend show;
+
+
+
 
 %% 9/15 - LENGTH OR AREA VS MAX HEATING RATE 
 
@@ -84,7 +118,7 @@ hold off;
 L_vec = linspace(1e-3, 50e-3, 40);      % 1 mm -> 200 mm
 
 % Diameters
-d_vec = linspace(0.0006, 0.001, 10); ;    
+d_vec = linspace(0.0006, 0.001, 10); 
 
 % Storage: rows = diameters, cols = lengths
 max_dTadt_mat = zeros(numel(d_vec), numel(L_vec));
