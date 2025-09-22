@@ -293,7 +293,9 @@ plot(t_LOSS, T_a_LOSS);
 %% 9/19 - MULTIPLE WIRES + RADIATIVE LOSS TEST, 2D
 % WORKS - Ta's actual resistivity + considering multiple wires WRT 6a, 6b
 % check out with Fig 3 
-
+diameter_wire = 6e-4; %m
+area_wire = (diameter_wire/2)^2 * pi(); %m^2
+length_wire = 0.005; %m
 n_wires = 4;  % set number of identical wires in parallel
 
 % Electrical: R_total = R_single / n, Heat capacity: Cw_total = n * Cw_single
@@ -361,10 +363,93 @@ xlabel('time (s)'); ylabel('T_{wire} (K)'); title('T_{wire}(t)'); grid on;
 nexttile; plot(t,T_a,'LineWidth',1.8);
 xlabel('time (s)'); ylabel('T_{Ni} (K)'); title('T_{Ni}(t)'); grid on; hold off;
 
-%%
+%% 
 
-T_DIFF_WIRE_REAL = T_w.^4 - 300^4;
-plot(t, T_DIFF_WIRE_REAL * eps_w * sigma*A_wire_total);
+
+% ---- Sweep ranges ----
+L_span = linspace(1e-3, 20e-3, 45);        % wire length [m]
+D_span = linspace(0.10e-3, 1.20e-3, 45);   % wire diameter [m]
+[LL, DD] = meshgrid(L_span, D_span);
+
+% ---- Constants (reused from your script or defined here) ----
+sigma  = 5.670374419e-8;   % Stefan–Boltzmann [W/m^2/K^4]
+T_env  = 300;              % [K]
+eps_w  = 0.30;             % Ta wire emissivity
+eps_a  = 0.15;             % Ni crystal emissivity
+rho_elec_Ta = 1.38e-7;     % [ohm*m] Ta @ ~300 K
+A_crys = 2*pi*ni_radius^2 + 2*pi*ni_radius*ni_thick; % crystal area [m^2]
+
+% Total current budget (your convention)
+I_max_total = 40 / (n_wires/2);   % [A] (kept from your snippet)
+
+% Preallocate
+max_dTa = zeros(size(LL));
+
+% Solver settings
+opts = odeset('RelTol',1e-7,'AbsTol',1e-8,'MaxStep',t_end/400);
+
+% Drive (scaled "power command" à la DeAngelis: l(t) = [i/imax]^2)
+I = @(t) double(t < t_on);  % 0/1 step
+
+for r = 1:size(LL,1)
+  for c = 1:size(LL,2)
+    Lw = LL(r,c);                 % current length [m]
+    Dw = DD(r,c);                 % current diameter [m]
+    Aw = pi*(Dw/2).^2;           % cross-section [m^2]
+
+    % Per-wire properties
+    conduct_wire_1 = conduct_Ta * (Aw / Lw);  % W/K (Fourier lumped)
+    mass_wire_g    = density_Ta * (Lw*Aw) * 1e6; % g  (m^3→cm^3)
+    Cw_1           = (mass_wire_g / atomicmass_Ta) * molarheatcap_Ta; % J/K
+
+    % Parallel wires
+    conduct_total  = n_wires * conduct_wire_1;      % W/K to crystal (sum of links)
+    Cw_total       = n_wires * Cw_1;                % J/K
+    R_single       = rho_elec_Ta * (Lw / Aw);       % ohms
+    R_total        = R_single / n_wires;            % parallel
+    A_wire_total   = n_wires * (pi*Dw * Lw);        % lateral area ~ circumference*length
+
+    % Heating parameter (scaled feedforward style): dT_w/dt term = rho_ff * I(t)
+    rho_ff = (I_max_total^2 * R_total) / Cw_total;  % [K/s] per unit I(t) (0..1)
+
+    % ODE (y1 = T_w, y2 = T_a)
+    odefun = @(t,y) [ ...
+      rho_ff*I(t) ...                                              % + Joule heating into wires
+      - (conduct_total*(y(1)-y(2)) + conduct_total*(y(1)-T_b)) / Cw_total ... % conduction to crystal & block
+      - eps_w*sigma*A_wire_total*(y(1).^4 - T_env^4)/Cw_total ;    % radiation from wires
+      ...
+      (conduct_total*(y(1)-y(2)))/heatcap_crystal ...               % conduction into crystal
+      - eps_a*sigma*A_crys*(y(2).^4 - T_env^4)/heatcap_crystal      % crystal radiation
+    ];
+
+    % Integrate
+    y0 = [T_b; T_b];
+    [t_sol, y_sol] = ode45(odefun, [0 t_end], y0, opts);
+    Tw = y_sol(:,1);  Ta = y_sol(:,2);
+
+    % Instantaneous crystal heating rate (from the same RHS)
+    dTa_dt = (conduct_total*(Tw - Ta))/heatcap_crystal ...
+           - eps_a*sigma*A_crys*(Ta.^4 - T_env^4)/heatcap_crystal;  % [K/s]
+
+    % Store maximum
+    max_dTa(r,c) = max(dTa_dt);
+  end
+end
+
+% ---- 3D contour plot ----
+figure('Color','w');
+L_mm = LL*1e3;   % x-axis in mm
+D_mm = DD*1e3;   % y-axis in mm
+contour3(L_mm, D_mm, max_dTa, 24, 'LineWidth', 1.2);
+grid on; box on;
+xlabel('Wire length L (mm)');
+ylabel('Wire diameter D (mm)');
+zlabel('Max dT_{a}/dt (K/s)');
+title('Max crystal heating rate vs wire length & diameter (n-wires in parallel)');
+view(45, 28);
+colorbar; % optional, gives a scalar key for contour heights
+
+
 
 %% 9/19 RADIATIVE LOSS TEST 3D, ONE WIRE 
 
@@ -401,10 +486,79 @@ xlabel('Wire Length (mm)'); ylabel('Wire Diameter (mm)'); zlabel('max dT_{Ni}/dt
 title('Max crystal heating rate vs. wire length & diameter (geom. \rho)');
 colorbar; view(-35, 28);
 
-%% POWER TEST
 
-T_w_DIFF4 = (T_w_LOSS .^4 - 200^4) .* diameter_wire * pi() * length_wire * eps_w * sigma;
+%% Max crystal heating rate vs wire diameter (L fixed at original)
 
-%T_w_DIFF4 = (T_w_LOSS .^4 - 300^4) .* area_wire * eps_w * sigma;
+% ---- Sweep range (diameter only) ----
+D_span = linspace(0.10e-3, 1.20e-3, 60);   % [m] adjust as needed
+L_fix  = 5e-3;                              % [m] original length
 
-T_a_DIFF4 = (T_a_LOSS .^ 4 - 200^4) .* A_crys * eps_a * sigma;
+% ---- Constants reused from your script ----
+sigma  = 5.670374419e-8;                    % W/m^2/K^4
+T_env  = 300;                               % K
+eps_w  = 0.30;                              % Ta wire emissivity
+eps_a  = 0.15;                              % Ni crystal emissivity
+rho_elec_Ta = 1.38e-7;                      % ohm*m (Ta ~300 K)
+A_crys = 2*pi*ni_radius^2 + 2*pi*ni_radius*ni_thick;  % crystal area [m^2]
+
+% Current budget convention from your snippet
+I_max_total = 40 / (n_wires/2);             % [A]
+
+% Preallocate
+max_dTa = zeros(size(D_span));
+
+% Solver settings
+opts = odeset('RelTol',1e-7,'AbsTol',1e-8,'MaxStep',t_end/400);
+
+% Drive (scaled 0/1 step)
+I = @(t) double(t < t_on);
+
+for k = 1:numel(D_span)
+    Dw = D_span(k);                         % current diameter [m]
+    Lw = L_fix;                             % fixed length [m]
+    Aw = pi*(Dw/2).^2;                      % cross-section [m^2]
+
+    % Per-wire properties
+    conduct_wire_1 = conduct_Ta * (Aw / Lw);               % W/K
+    mass_wire_g    = density_Ta * (Lw*Aw) * 1e6;           % g  (m^3 -> cm^3)
+    Cw_1           = (mass_wire_g / atomicmass_Ta) * molarheatcap_Ta; % J/K
+
+    % Parallel wires
+    conduct_total  = n_wires * conduct_wire_1;             % W/K
+    Cw_total       = n_wires * Cw_1;                       % J/K
+    R_single       = rho_elec_Ta * (Lw / Aw);              % ohms
+    R_total        = R_single / n_wires;                   % parallel
+    A_wire_total   = n_wires * (pi*Dw * Lw);               % lateral area
+
+    % Heating parameter for scaled step input
+    rho_ff = (I_max_total^2 * R_total) / Cw_total;         % K/s per unit I(t)
+
+    % ODE: y = [T_w; T_a]
+    odefun = @(t,y) [ ...
+        rho_ff*I(t) ...
+      - (conduct_total*(y(1)-y(2)) + conduct_total*(y(1)-T_b)) / Cw_total ...
+      - eps_w*sigma*A_wire_total*(y(1).^4 - T_env^4)/Cw_total ;
+        (conduct_total*(y(1)-y(2)))/heatcap_crystal ...
+      - eps_a*sigma*A_crys*(y(2).^4 - T_env^4)/heatcap_crystal ...
+    ];
+
+    % Integrate
+    y0 = [T_b; T_b];
+    [t_sol, y_sol] = ode45(odefun, [0 t_end], y0, opts);
+    Tw = y_sol(:,1);  Ta = y_sol(:,2);
+
+    % Crystal heating rate (consistent with RHS)
+    dTa_dt = (conduct_total*(Tw - Ta))/heatcap_crystal ...
+           - eps_a*sigma*A_crys*(Ta.^4 - T_env^4)/heatcap_crystal;
+
+    % Record max
+    max_dTa(k) = max(dTa_dt);
+end
+
+% ---- Plot ----
+figure('Color','w');
+plot(D_span*1e6, max_dTa, 'LineWidth', 1.8);
+grid on; box on;
+xlabel('Wire diameter D (\mum)');
+ylabel('Max dT_{a}/dt (K/s)');
+title(sprintf('Max crystal heating rate vs wire diameter (L = %.1f mm, n = %d)', L_fix*1e3, n_wires));

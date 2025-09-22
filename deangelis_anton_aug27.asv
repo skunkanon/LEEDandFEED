@@ -291,8 +291,11 @@ plot(t_LOSS, T_a_LOSS);
 
 
 %% 9/19 - MULTIPLE WIRES + RADIATIVE LOSS TEST, 2D
-
-
+% WORKS - Ta's actual resistivity + considering multiple wires WRT 6a, 6b
+% check out with Fig 3 
+diameter_wire = 6e-4; %m
+area_wire = (diameter_wire/2)^2 * pi();
+length_wire = 0.005; %
 n_wires = 4;  % set number of identical wires in parallel
 
 % Electrical: R_total = R_single / n, Heat capacity: Cw_total = n * Cw_single

@@ -1077,3 +1077,125 @@ title(sprintf('Cl/Rh(111) Step TPD, 300 K -> %.0f K', init_tmp));
 xlabel('Time (s)');
 ylabel('Coverage');
 hold off;
+%% 3D Contour Plot of Max Crystal Heating Rate vs Wire Length and Diameter
+% Based on the wire heating simulation code
+
+clear; clc; close all;
+
+%% Define parameter ranges for the contour plot
+length_range = linspace(0.001, 0.01, 20);  % Wire length range: 1mm to 10mm
+diameter_range = linspace(2e-4, 10e-4, 20);  % Wire diameter range: 0.2mm to 1mm
+
+% Initialize the result matrix
+max_Ta_matrix = zeros(length(diameter_range), length(length_range));
+
+% Fixed parameters (from your original code)
+n_wires = 4;
+I_max_total = 40 / (n_wires/2);
+T_env = 300;
+eps_w = 0.30;
+eps_a = 0.15;
+sigma = 5.670374419e-8;
+
+% Material properties
+rho_elec_Ta = 1.38e-7;  % ohm*m (Ta @ ~300 K)
+
+% Crystal properties (you'll need to define these based on your system)
+ni_radius = 2e-3;  % m (example value)
+ni_thick = 0.5e-3;  % m (example value)
+heatcap_crystal = 100;  % J/K (example value)
+conduct_wire = 50;  % W/K (example value)
+heatcap_wire = 20;  % J/K (example value)
+T_b = 300;  % K (base temperature)
+
+% Time parameters
+t_on = 1;  % s
+t_end = 5;  % s
+
+fprintf('Starting parameter sweep...\n');
+fprintf('Progress: ');
+
+% Loop through parameter space
+for i = 1:length(diameter_range)
+    for j = 1:length(length_range)
+        
+        % Update progress
+        if mod(i*j, 20) == 0
+            fprintf('.');
+        end
+        
+        % Current parameters
+        diameter_wire = diameter_range(i);
+        length_wire = length_range(j);
+        
+        % Calculate derived parameters
+        area_wire = (diameter_wire/2)^2 * pi();
+        R_single = rho_elec_Ta * length_wire / area_wire;
+        R_total = R_single;
+        Cw_total = heatcap_wire;
+        
+        % Heating parameter
+        rho = (I_max_total^2 * R_total) / Cw_total;
+        
+        % Radiative area
+        A_wire_single = 2*sqrt(pi*area_wire)*length_wire;
+        A_wire_total = n_wires * A_wire_single;
+        A_crys = 2*pi*ni_radius^2 + 2*pi*ni_radius*ni_thick;
+        
+        % ODE function
+        I = @(t) (t < t_on);
+        odefun = @(t,y) [ ...
+            (R_total*I(t) * (20^2/2)...
+            - conduct_wire*(y(1) - y(2)) - conduct_wire*(y(1) - T_b)) / heatcap_wire ...
+            - eps_w*sigma*A_wire_total * ( y(1).^4 - T_env^4 ) / Cw_total;
+            (conduct_wire *(y(1) - y(2)) * n_wires)/ heatcap_crystal ...
+            - eps_a*sigma*A_crys * ( y(2).^4 - T_env^4 ) / heatcap_crystal
+        ];
+        
+        % Solve ODE
+        y0 = [200; 200];
+        opts = odeset('RelTol',1e-6,'AbsTol',1e-6);
+        try
+            [t,y] = ode45(odefun,[0 t_end],y0,opts);
+            T_w = y(:,1); 
+            T_a = y(:,2);
+            
+            % Find maximum crystal temperature
+            max_Ta_matrix(i,j) = max(T_a);
+        catch
+            % Handle any integration errors
+            max_Ta_matrix(i,j) = NaN;
+        end
+    end
+end
+
+fprintf(' Done!\n');
+
+%% Create 3D contour plot
+figure('Position', [100, 100, 1000, 700]);
+
+% Create meshgrid for plotting
+[D, L] = meshgrid(length_range, diameter_range*1000);  % Convert diameter to mm for plotting
+
+% Create 3D contour plot
+contourf(L, D, max_Ta_matrix, 20, 'LineStyle', 'none');
+colorbar;
+xlabel('Wire Length (m)', 'FontSize', 12);
+ylabel('Wire Diameter (mm)', 'FontSize', 12);
+title('Max Crystal Temperature (K) - 3D Contour Plot', 'FontSize', 14, 'FontWeight', 'bold');
+colormap(jet);
+grid on;
+
+%% Print some statistics
+fprintf('\nResults Summary:\n');
+fprintf('Max temperature achieved: %.1f K\n', max(max_Ta_matrix(~isnan(max_Ta_matrix))));
+fprintf('Min temperature achieved: %.1f K\n', min(min(max_Ta_matrix(~isnan(max_Ta_matrix)))));
+fprintf('Temperature range: %.1f K\n', max(max_Ta_matrix(~isnan(max_Ta_matrix))) - min(min(max_Ta_matrix(~isnan(max_Ta_matrix)))));
+
+% Find optimal parameters
+[max_temp, max_idx] = max(max_Ta_matrix(:));
+[i_opt, j_opt] = ind2sub(size(max_Ta_matrix), max_idx);
+fprintf('\nOptimal wire geometry:\n');
+fprintf('Length: %.3f m\n', length_range(j_opt));
+fprintf('Diameter: %.3f mm\n', diameter_range(i_opt)*1000);
+fprintf('Max crystal temperature: %.1f K\n', max_temp);
