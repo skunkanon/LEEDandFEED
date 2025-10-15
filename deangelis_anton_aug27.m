@@ -18,6 +18,86 @@ heatcap_wire = (mass_wire / atomicmass_Ta) * molarheatcap_Ta;
 
 kapp_w = conduct_wire/heatcap_wire;
 
+% 9/18 - KAPP_A
+
+ni_radius = 0.005; %m
+ni_thick = 0.0002; %m 
+ni_density = 8.9 * 10^3; %kg / m^3
+mass_crystal = pi() * ni_radius^2 * ni_thick * ni_density; %1.398 * 10^-4 kg
+C_ni = 26.07; %J/mol K
+atomicmass_Ni = 58.69; %g/mol
+heatcap_crystal = C_ni * (mass_crystal*1000)/atomicmass_Ni; %0.0621 J/K
+
+kapp_a = conduct_wire/heatcap_crystal; %0.052 s^-1
+
+
+
+% EQ 8 FOR CRYSTAL TEMP
+
+% ---- Parameters 
+Tb     = 80;           % K, cooling block
+rho = 1900;          % K/s, effective wire "resistivity" from DeAngelis/Anton
+Ta0    = 200;          % K, initial crystal temp
+
+
+% GEOMETRY MOD, DISPLACING RHO = 1900 INDEPENDENT OF WIRE DIAMETER
+rho_elec_Ta  = 2.22e-7;           % ohm * m (for Ta @ 300K) 1.38 
+R     = rho_elec_Ta * length_wire / area_wire;  % ohm 
+I_max = 40;                 
+rho   = (I_max^2 * R) / heatcap_wire;    % K/s when input=1
+
+
+dTa_dT_MAX = ((kapp_a * rho) / (2 * kapp_w)) - (kapp_a/2 * (Ta0 - Tb));
+
+%ALT DEFINE kapp_w/rho 
+
+reduced = 7.263e-4; %kapp_w / rho 
+%dTa_dT_MAX = (kapp_a * reduced^-1) / 2 - (kapp_a/2 * (Ta0-Tb));
+
+%% 9/25 - EQUATION 8 FOR MAX RATE CONTOUR 
+
+
+% Sweeps
+length_wireSPAN   = linspace(1e-3, 20e-3, 150);       % m
+diameter_wireSPAN = linspace(0.1e-3, 1.2e-3, 150);    % m
+[length_wireSPAN, diameter_wireSPAN] = meshgrid(length_wireSPAN, diameter_wireSPAN);
+
+% Geometry-dependent terms
+area_wireSPAN      = pi*(diameter_wireSPAN/2).^2;                          % m^2
+conduct_wireSPAN   = conduct_Ta .* (area_wireSPAN ./ length_wireSPAN);     % W/K
+mass_wireSPAN_g    = density_Ta .* (length_wireSPAN .* area_wireSPAN) .* 1e6; % g
+heatcap_wireSPAN   = (mass_wireSPAN_g ./ atomicmass_Ta) .* molarheatcap_Ta;   % J/K
+
+% Inverse time constants
+kapp_wSPAN = conduct_wireSPAN ./ heatcap_wireSPAN;         % s^-1
+kapp_aSPAN = conduct_wireSPAN ./ heatcap_crystal;          % s^-1
+
+% Drive tied to geometry
+RSPAN        = rho_elec_Ta .* (length_wireSPAN ./ area_wireSPAN);          % ohm
+rhoSPAN      = (I_max.^2 .* RSPAN) ./ heatcap_wireSPAN;                    % K/s
+
+% Closed-form max heating rate
+dTa_dt_MAX_SPAN = (kapp_aSPAN .* rhoSPAN) ./ (2 .* kapp_wSPAN) ...
+                  - (kapp_aSPAN./2) .* (Ta0 - Tb);                         % K/s
+
+% Plot
+figure('Color','w');
+hSurf = surf(length_wireSPAN*1e3, diameter_wireSPAN*1e3, dTa_dt_MAX_SPAN);
+shading interp; box on; grid on; hold on;
+
+% Make the surface semi-transparent
+set(hSurf, 'FaceAlpha', 0.5, 'EdgeAlpha', 0.3);
+
+% Overlay contour lines
+contour3(length_wireSPAN*1e3, diameter_wireSPAN*1e3, dTa_dt_MAX_SPAN, 25, 'LineWidth', 1.5);
+
+xlabel('Wire length (mm)');
+ylabel('Wire diameter (mm)');
+zlabel('dT_a/dt_{MAX} (K/s)');
+title('Max crystal heating rate vs wire length & diameter');
+view(135,30);
+
+
 %% 9/18 - 3D PLOT OF KAPP_W 
 
 length_wireSPAN = linspace(3/1000, 6/1000, 15);    % wire length [m]
@@ -55,17 +135,7 @@ colorbar; view(-35, 28);
 % fprintf('Max relative variation along D at fixed L: %.2e\n', rr);
 
 
-%% 9/18 - KAPP_A
 
-ni_radius = 0.005; %m
-ni_thick = 0.0002; %m 
-ni_density = 8.9 * 10^3; %kg / m^3
-mass_crystal = pi() * ni_radius^2 * ni_thick * ni_density; %1.398 * 10^-4 kg
-C_ni = 26.07; %J/mol K
-atomicmass_Ni = 58.69; %g/mol
-heatcap_crystal = C_ni * (mass_crystal*1000)/atomicmass_Ni; %0.0621 J/K
-
-kapp_a = conduct_wire/heatcap_crystal; %0.052 s^-1
 
 %% 9/18 3D PLOT OF KAPP_A
 % Inverse time constant
@@ -89,20 +159,20 @@ colorbar; view(-35, 28);
 
 R_gas = 8.314; % J/mol K
 T_b = 80; %cooling block temp, K 
-%kap_a = 0.049; % k / m_a * c_a, slow inverse time constant, s^-1 
-kap_a = kapp_a; % SLOW INVERSE TIME CONSTANT CALCULATED FROM WIRE DIMENSIONS
-kap_w = kapp_w; %kappa_w derived from dimensions as opposed to fit
-%kap_w = 0.81; % k / m_w * c_w, fast inverse time constant, s^-1 GIVEN 
+kap_a = 0.049; % k / m_a * c_a, slow inverse time constant, s^-1 
+%kap_a = kapp_a; % SLOW INVERSE TIME CONSTANT CALCULATED FROM WIRE DIMENSIONS
+%kap_w = kapp_w; %kappa_w derived from dimensions as opposed to fit
+kap_w = 0.81; % k / m_w * c_w, fast inverse time constant, s^-1 GIVEN 
 
 
 
 
 % GEOMETRY MOD, DISPLACING RHO = 1900 INDEPENDENT OF WIRE DIAMETER
-rho_elec_Ta  = 2.2e-7;           % ohm * m (for Ta @ 300K) 1.38 
+rho_elec_Ta  = 1.38e-7;           % ohm * m (for Ta @ 300K) 1.38 
 R     = rho_elec_Ta * length_wire / area_wire;  % ohm 
 I_max = 40;                 
 rho   = (I_max^2 * R) / heatcap_wire;    % K/s when input=1
-
+rho = 1900;
 
 
 %rho = 1900; % GIVEN 'effective wire resistivity for rapid heating, i_max^2 * R / m_w * c_w
@@ -293,6 +363,7 @@ plot(t_LOSS, T_a_LOSS);
 %% 9/19 - MULTIPLE WIRES + RADIATIVE LOSS TEST, 2D
 % WORKS - Ta's actual resistivity + considering multiple wires WRT 6a, 6b
 % check out with Fig 3 
+fprintf('NEW INSTANCE \n');
 diameter_wire = 6e-4; %m
 area_wire = (diameter_wire/2)^2 * pi(); %m^2
 length_wire = 0.005; %m
@@ -313,7 +384,7 @@ rho = (I_max_total^2 * R_total) / Cw_total;         % = I_max^2 * R_single / (n^
 A_wire_single = 2*sqrt(pi*area_wire)*length_wire;   % m^2
 A_wire_total  = n_wires * A_wire_single;            % m^2
 
-fprintf('n_wires=%d  |  kappa_w/rho = %4e \n', n_wires, kap_w/rho);
+%fprintf('n_wires=%d  |  kappa_w/rho = %4e \n', n_wires, kap_w/rho);
 
 % ---- ODE with radiation (wire uses total area & total heat capacity) ----
 sigma = 5.670374419e-8;  % W/m^2/K^4
@@ -342,6 +413,7 @@ odefun = @(t,y) [ ...
   - eps_a*sigma*A_crys * ( y(2).^4 - T_env^4 ) / heatcap_crystal       % crystal radiation
 ];
 
+fprintf('\n RESISTANCE FOR WHATEVER REASON = %2f \n', R);
 
 
 % ---- Integrate and plot (unchanged below) ----
@@ -362,6 +434,45 @@ xlabel('time (s)'); ylabel('T_{wire} (K)'); title('T_{wire}(t)'); grid on;
 
 nexttile; plot(t,T_a,'LineWidth',1.8);
 xlabel('time (s)'); ylabel('T_{Ni} (K)'); title('T_{Ni}(t)'); grid on; hold off;
+
+
+% Calculate the heating rate (dT_a/dt) by taking the numerical derivative
+dT_a_dt = gradient(T_a, t);
+
+% Find the maximum heating rate
+max_heating_rate = max(dT_a_dt);
+fprintf('Maximum heating rate of crystal (T_a): %.4f K/s\n', max(dT_a_dt));
+
+% Calculate radiative losses for both wire and crystal
+radiative_loss_wire = eps_w * sigma * A_wire_total * (T_w.^4 - T_env^4);  % W
+radiative_loss_crystal = eps_a * sigma * A_crys * (T_a.^4 - T_env^4);     % W
+total_radiative_loss = radiative_loss_wire + radiative_loss_crystal;      % W
+
+% Modify the existing plotting section to include 4 subplots
+figure(4); 
+tiledlayout(4,1);  % Changed from 3,1 to 4,1
+
+nexttile; stairs(tI, ItI, 'LineWidth', 1.8); ylim([-0.05 1.05]);
+xlabel('time (s)'); ylabel('I(t) (scaled)'); title('Current command'); grid on;
+
+nexttile; plot(t,T_w,'LineWidth',1.8);
+xlabel('time (s)'); ylabel('T_{wire} (K)'); title('T_{wire}(t)'); grid on;
+
+nexttile; plot(t,T_a,'LineWidth',1.8);
+xlabel('time (s)'); ylabel('T_{Ni} (K)'); title('T_{Ni}(t)'); grid on;
+
+% New fourth subplot for radiative losses
+nexttile; 
+plot(t, radiative_loss_wire, 'r-', 'LineWidth', 1.8, 'DisplayName', 'Wire Radiation');
+hold on;
+plot(t, radiative_loss_crystal, 'b-', 'LineWidth', 1.8, 'DisplayName', 'Crystal Radiation');
+plot(t, total_radiative_loss, 'k--', 'LineWidth', 2, 'DisplayName', 'Total Radiation');
+xlabel('time (s)'); 
+ylabel('Radiative Loss (W)'); 
+title('Radiative Heat Loss vs Time');
+legend('Location', 'best');
+grid on;
+hold off;
 
 %% 
 
