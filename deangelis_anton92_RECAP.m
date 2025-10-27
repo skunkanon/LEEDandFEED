@@ -116,7 +116,7 @@ C_ni = 26.07; %J/mol K
 atomicmass_Ni = 58.69; %g/mol
 heatcap_crystal = C_ni * (mass_crystal*1000)/atomicmass_Ni; %0.0621 J/K
 
-T_b = 300; %K, original 80 K 
+T_b = 80; %K, original 80 K 
 
 
 % 'ORIGINAL' CODE: 9/19 - MULTIPLE WIRES + RADIATIVE LOSS TEST, 2D
@@ -149,8 +149,8 @@ eps_w = 0.30;            % Ta wire emissivity
 eps_a = 0.15;            % Ni crystal emissivity
 
 A_crys = 2*pi*ni_radius^2 + 2*pi*ni_radius*ni_thick; % m^2
-t_on   = 15.0;            % s   heating pulse length
-t_end  = 30.0;            % s   simulation horizon
+t_on   = 2.0;            % s   heating pulse length, original 2 sec
+t_end  = 8.0;            % s   simulation horizon, original 8 sec 
 
 I = @(t) (t < t_on);
 %{
