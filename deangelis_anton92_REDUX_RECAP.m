@@ -1,24 +1,4 @@
-%OCT 22, new DEANGELIS
-%run TANT.m first
-
-% === Resistivity fit → R(T) for the Ta span ===
-% Expect Ta_scan(:,1) = T [K], Ta_scan(:,2) = rho data (see units note below)
-
-Ta_temp = Ta_scan(:,1).';
-Ta_rho  = Ta_scan(:,2).';
-
-% Fit a cubic (you already tested this elsewhere)
-p = polyfit(Ta_temp, Ta_rho, 3);
-
-% Units note: Desai published as 10^-8
-scale = 1e-8;  
-
-% Resistivity vs T [ohm·m]
-Ta_rho_FUNCT = @(T) ( ( (p(1)*T + p(2)).*T + p(3) ).*T + p(4) ) * scale;
-
-% Geometry for THIS page's single Ta span
-R_wire_FUNCT = @(T) Ta_rho_FUNCT(T) .* (length_wire ./ area_wire);  % [ohm]
-%% DEFINE VARIABLES
+% DEFINE VARIABLES
 
 
 % ---- Universal constants ----
@@ -51,8 +31,7 @@ SA_wire_total = n_wires * SA_wire_single;  % total radiative area (m^2)
 
 % ---- Electrical parameters ----
 rho_elec_Ta = 2.2e-7;          % Ω·m (approx @300 K)
-R_single = rho_elec_Ta * length_wire / area_wire;  % Ω
-R_total  = R_single / 2;       % effective for two-wire pair (legacy)
+R_single = rho_elec_Ta * length_wire / area_wire;  % Ω, CONSTANT 
 I_max    = 40;                 % A, total available current
 I_max_single = I_max / (n_wires/2);  % current per active span (your convention)
 
@@ -62,7 +41,13 @@ ni_thick   = 0.0002;           % m
 ni_density = 8.9e3;            % kg/m^3
 C_ni       = 26.07;            % J/mol·K
 atomicmass_Ni = 58.69;         % g/mol
-eps_a      = 0.15;             % emissivity (Ni crystal)
+eps_a      = 0.05;             % emissivity (Ni crystal)
+
+%C_ni = 24.98; %RHODIUM
+%atomicmass_Ni = 102.91;
+%eps_a = ;
+
+
 
 % ---- Derived Ni properties ----
 mass_crystal = pi * ni_radius^2 * ni_thick * ni_density; % kg
@@ -72,10 +57,27 @@ A_crys = 2*pi*ni_radius^2 + 2*pi*ni_radius*ni_thick;     % m^2, total area
 
 % ---- Timing ----
 t_on  = 2.0;   % s, heating pulse
-t_end = 8.0;   % s, total simulation horizon
+t_end = 6.0;   % s, total simulation horizon
 
 
+ %=== Resistivity fit → R(T) for the Ta span ===
+% Expect Ta_scan(:,1) = T [K], Ta_scan(:,2) = rho data (see units note below)
 
+Ta_temp = Ta_scan(:,1).';
+Ta_rho  = Ta_scan(:,2).';
+
+% Fit a cubic (you already tested this elsewhere)
+p = polyfit(Ta_temp, Ta_rho, 3);
+
+% Units note: Desai published as 10^-8
+scale_BASE = 1e-8;
+scale = scale_BASE * 2.2/1.63; %makes rho @ 300 K the same as RECAP's 
+
+% Resistivity vs T [ohm·m]
+Ta_rho_FUNCT = @(T) ( ( (p(1)*T + p(2)).*T + p(3) ).*T + p(4) ) * scale;
+
+% Geometry for THIS page's single Ta span
+R_wire_FUNCT = @(T) Ta_rho_FUNCT(T) .* (length_wire ./ area_wire);  % [ohm]
 
 %% === ODE with temperature-dependent R and proper radiating area ===
 I = @(t) (t < t_on);                 % 0/1 gate
@@ -83,7 +85,7 @@ I_amp_single = I_max_single;         % amps
 
 odefun = @(t,y) [ ...
     % --- wire node (y1) ---
-    ( (I(t) * I_amp_single).^2 .* R_wire_FUNCT(y(1)) ...   % Joule heat, W
+    ( (I(t) * I_amp_single).^2 .* R_single ...   % Joule heat, W, R_wire_FUNCT(y(1))
       -  conduct_wire * (y(1) - y(2)) ...                  % to crystal
       -  conduct_wire * (y(1) - T_b) ...                   % to bath
       -  eps_w * sigma * SA_wire_total * ( y(1).^4 - T_env^4 ) ... % radiation (all wires)
@@ -144,7 +146,7 @@ lhs_wire = heatcap_wire * dT_w_dt;   % predicted by ODE right-hand side
 
 
 %% EVERYTHING PLOT
-figure(1); clf;
+figure(14); clf;
 tiledlayout(4,2,'TileSpacing','compact','Padding','compact');
 
 % ============ LEFT COLUMN (thermal evolution) ============
@@ -187,7 +189,7 @@ legend('Location','best'); grid on; hold off;
 nexttile(2);
 plot(t, R_t, 'LineWidth', 1.8);
 xlabel('time (s)'); ylabel('R_{wire} (\Omega)');
-title('Temperature-dependent R(T)');
+title('Temperature-dependent R(T) of wire');
 grid on;
 
 % Row 2: Joule power
@@ -196,8 +198,8 @@ plot(t, P_joule, 'LineWidth', 1.8);
 xlabel('time (s)'); ylabel('Power (W)');
 title('Joule power');
 grid on;
-
-% Row 3: conduction + radiation
+% 
+% % Row 3: conduction + radiation
 nexttile(6);
 plot(t, Q_cond_wire_to_crys, 'LineWidth',1.8,'DisplayName','Cond → crystal'); hold on;
 plot(t, Q_cond_wire_to_bath, 'LineWidth',1.8,'DisplayName','Cond → bath');
@@ -206,25 +208,33 @@ xlabel('time (s)'); ylabel('W');
 title('Wire heat-flow channels');
 legend('Location','best'); grid on; hold off;
 
-% Row 4: energy balance
-nexttile(8);
-plot(Ta_temp, Ta_rho * scale, 'ko', 'MarkerFaceColor',[0.2 0.2 0.2], ...
-    'DisplayName','Data');
-T_fit = linspace(min(Ta_temp), max(Ta_temp), 400);
+
+nexttile(8); hold on;
+
+% Data + fit
+
+T_fit  = linspace(min(Ta_temp), max(Ta_temp), 400);
 rho_fit = Ta_rho_FUNCT(T_fit);
 plot(T_fit, rho_fit, 'r-', 'LineWidth', 1.8, 'DisplayName','Cubic fit');
 
+% --- Translucent rectangle over simulated T-range, spanning full y-limits ---
+ax = gca;
+ax.YLimMode = 'auto';                  % ensure limits reflect plotted data
+yl = ax.YLim;
+
 T_min_sim = min(T_w);
 T_max_sim = max(T_w);
-y_limits = ylim;
-patch([T_min_sim T_max_sim T_max_sim T_min_sim], ...
-      [y_limits(1) y_limits(1) y_limits(2) y_limits(2)], ...
-     'b', 'EdgeColor','none', 'FaceAlpha',0.3, ...
-      'DisplayName','Simulated T-range');
 
-xlabel('Temperature (K)');
-ylabel('\rho_{Ta} (ohm·m)');
-title('Tantalum resistivity vs temperature');
-legend('Location','northwest');
-% overall title
-sgtitle('Temperature evolution (left) vs Electrical/thermal diagnostics (right)');
+hRect = patch([T_min_sim T_max_sim T_max_sim T_min_sim], ...
+              [yl(1)      yl(1)      yl(2)      yl(2)], ...
+              'b', 'EdgeColor','none', 'FaceAlpha',0.3, ...
+              'DisplayName','Simulated T-range');
+
+uistack(hRect,'bottom');               % keep the shade behind lines
+
+xlabel('T (K)'); ylabel('\rho (\Omega\cdot m)');
+title('Wire Resistivity vs Temperature');
+legend('Location','best'); grid on;
+
+%%
+

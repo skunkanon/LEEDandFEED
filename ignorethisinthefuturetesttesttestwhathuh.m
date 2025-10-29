@@ -1077,6 +1077,9 @@ title(sprintf('Cl/Rh(111) Step TPD, 300 K -> %.0f K', init_tmp));
 xlabel('Time (s)');
 ylabel('Coverage');
 hold off;
+
+
+
 %% 3D Contour Plot of Max Crystal Heating Rate vs Wire Length and Diameter
 % Based on the wire heating simulation code
 
@@ -1199,3 +1202,4 @@ fprintf('\nOptimal wire geometry:\n');
 fprintf('Length: %.3f m\n', length_range(j_opt));
 fprintf('Diameter: %.3f mm\n', diameter_range(i_opt)*1000);
 fprintf('Max crystal temperature: %.1f K\n', max_temp);
+
