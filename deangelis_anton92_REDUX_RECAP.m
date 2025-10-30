@@ -14,7 +14,7 @@ conduct_Ta      = 57.5;        % W/m·K
 eps_w           = 0.30;        % emissivity (Ta wire)
 
 % ---- Wire geometry ----
-length_wire   = 0.005;         % m
+length_wire   = 0.007;         % m
 diameter_wire = 0.0006;        % m
 area_wire     = pi * (diameter_wire/2)^2;          % m^2 (≈2.83e-7)
 SA_wire_single = pi * diameter_wire * length_wire;  % m^2 (lateral area)
@@ -57,7 +57,7 @@ A_crys = 2*pi*ni_radius^2 + 2*pi*ni_radius*ni_thick;     % m^2, total area
 
 % ---- Timing ----
 t_on  = 2.0;   % s, heating pulse
-t_end = 6.0;   % s, total simulation horizon
+t_end = 15.0;   % s, total simulation horizon
 
 
  %=== Resistivity fit → R(T) for the Ta span ===
