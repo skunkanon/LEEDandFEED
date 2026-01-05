@@ -71,17 +71,43 @@ Ta_scan = [
 3211.741547446485, 116.04113381507912
 3249.8634569960363, 117.08041966742974
 ];
+
+
+
+%%
+
+Ta_scan_CONDUCT = [
+300, 57.5
+400, 57.8
+600, 58.6
+800, 59.4
+1000, 60.2
+1200, 60.6
+1500, 62.2
+1800, 63.4
+2000, 64.1
+2473, 66.5
+3000, 65.6
+];
+
+
 %% 
 Ta_temp = Ta_scan(:,1)';
 Ta_rho = Ta_scan(:,2)';
-figure;
-hold on;
-plot(Ta_temp, Ta_rho);
 
-p = polyfit(Ta_temp, Ta_rho, 3);
-Ta_rho_fit = polyval(p, Ta_temp);
-plot(Ta_temp, Ta_rho_fit);
+Ta_temp_CONDUCT = Ta_scan_CONDUCT(:,1)';
+Ta_CONDUCT = Ta_scan_CONDUCT(:,2)';
+
+figure(1); clf;
+hold on;
+plot(Ta_temp_CONDUCT, Ta_CONDUCT, 'g');
+
+p = polyfit(Ta_temp_CONDUCT, Ta_CONDUCT, 2);
+Ta_rho_fit = polyval(p, Ta_temp_CONDUCT);
+plot(Ta_temp_CONDUCT, Ta_rho_fit);
 hold off;
 fprintf('\n rho(T) = %.4e*T^3 + %.4e*T^2 + %.4e*T + %.4e\n', p);
+
+
 
 

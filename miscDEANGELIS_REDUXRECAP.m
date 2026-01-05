@@ -62,7 +62,7 @@ n_wires = 6;                   % number of identical wires
 SA_wire_total = n_wires * SA_wire_single;  % total radiative area (m^2)
 
 % ---- Electrical parameters ----
-rho_elec_Ta = 2.2e-7;          % Ω·m (approx @300 K)
+rho_elec_Ta = 1.38e-7;          % Ω·m (approx @300 K)
 R_single = rho_elec_Ta * length_wire / area_wire;  % Ω, CONSTANT 
 I_max    = 20;                 % A, total available current
 I_max_single = I_max / (n_wires/2);  % current per active span (your convention)
@@ -81,7 +81,7 @@ dime_thick   = 1.35e-3;         % m  (US dime thickness = 1.35 mm)
 cu_density   = 8.96e3;          % kg/m^3 (copper)
 C_cu         = 24.47;           % J/mol·K (molar Cp of Cu at ~25 °C)
 atomicmass_Cu = 63.546;         % g/mol
-eps_a        = 0.45;            % emissivity (polished copper 0.1 to 0.2; oxidized can be much higher), doesnt affect ramp rate though 
+eps_a        = 0.85;            % emissivity (polished copper 0.1 to 0.2; oxidized can be much higher), doesnt affect ramp rate though 
 
 spotweldscale = 1; %NEW VARIABLE, 12/28
 
@@ -97,17 +97,20 @@ atomicmass_Ni = atomicmass_Cu;
 %atomicmass_Ni = 102.91;
 %eps_a = ;
 
-
+%rho_elec_Ta = 0;
 
 % ---- Derived Ni properties ----
 mass_crystal = pi * ni_radius^2 * ni_thick * ni_density; % kg
 heatcap_crystal = C_ni * (mass_crystal * 1000) / atomicmass_Ni; % J/K
+
+heatcap_crystal = 0.235; % HARDCODE FOR DIME, 1/1
+
 A_crys = 2*pi*ni_radius^2 + 2*pi*ni_radius*ni_thick;     % m^2, total area
 
 
 % ---- Timing ----
-t_on  = 1590.0;   % s, heating pulse
-t_end = 1760.0;   % s, total simulation horizon
+t_on  = 1090.0;   % s, heating pulse
+t_end = 1260.0;   % s, total simulation horizon
 
 
  %=== Resistivity fit → R(T) for the Ta span ===
@@ -129,26 +132,11 @@ Ta_rho_FUNCT = @(T) ( ( (p(1)*T + p(2)).*T + p(3) ).*T + p(4) ) * scale;
 % Geometry for THIS page's single Ta span
 R_wire_FUNCT = @(T) Ta_rho_FUNCT(T) .* (length_wire ./ area_wire);  % [ohm]
 
+
+
 %% === ODE with temperature-dependent R and proper radiating area ===
 I = @(t) (t < t_on);                 % 0/1 gate
 I_amp_single = I_max_single;         % amps 
-%{ 
-%CONSTANT RESISTIVITY
-
-odefun = @(t,y) [ ...
-    % --- wire node (y1) ---
-    ( (I(t) * I_amp_single).^2 .* R_single ...   % Joule heat, W, R_wire_FUNCT(y(1))
-      -  (conduct_wire*spotweldscale) * (y(1) - y(2)) ...                  % to crystal
-      -  conduct_wire * (y(1) - T_b) ...                   % to bath
-      -  eps_w * sigma * SA_wire_total * ( y(1).^4 - T_env^4 ) ... % radiation (all wires)
-    ) / heatcap_wire ; ...
-    % --- crystal node (y2) ---
-    ( (conduct_wire * spotweldscale) * (y(1) - y(2)) * n_wires ...           % from all wires
-      - eps_a * sigma * A_crys * ( y(2).^4 - T_env^4 ) ... % crystal radiative loss
-    ) / heatcap_crystal ...
-];
-%}
-
 
 odefun = @(t,y) [ ...
     % --- wire node (y1) ---
@@ -172,17 +160,6 @@ T_w = y(:,1); T_a = y(:,2);
 tI  = linspace(0, t_end, 800);
 ItI = arrayfun(I, tI);
 
-% Crystal heating rate (model): dT/dt [K/s]
-dTcrys_dt = gradient(T_a, t);
-
-% Crystal heating rate (data): dT/dt [K/s]  (optional overlay)
-t_IRL = timespan_IRL(:);
-T_IRL = tempspan_IRL(:);
-dTcrys_dt_IRL = gradient(T_IRL, t_IRL);
-
-% Optional light smoothing (uncomment if you want less jaggedness)
-% dTcrys_dt = movmean(dTcrys_dt, 5);
-% dTcrys_dt_IRL = movmean(dTcrys_dt_IRL, 3);
 
 %% DIAGNOSTICS
 
@@ -294,55 +271,28 @@ nexttile(8); hold on;
 
 % Data + fit
 
-% (8) crystal heating rate
-nexttile(8);
-hold on;
-plot(t, dTcrys_dt, 'LineWidth', 1.8, 'DisplayName','Model dT/dt');
-plot(t_IRL, dTcrys_dt_IRL, '--', 'LineWidth', 1.8, 'DisplayName','Data dT/dt');
-xlabel('time (s)'); ylabel('dT_{crystal}/dt (K/s)');
-title('Crystal heating rate');
-legend('Location','best'); grid on; hold off;
+T_fit  = linspace(min(Ta_temp), max(Ta_temp), 400);
+rho_fit = Ta_rho_FUNCT(T_fit);
+plot(T_fit, rho_fit, 'r-', 'LineWidth', 1.8, 'DisplayName','Cubic fit');
 
+% --- Translucent rectangle over simulated T-range, spanning full y-limits ---
+ax = gca;
+ax.YLimMode = 'auto';                  % ensure limits reflect plotted data
+yl = ax.YLim;
 
-%% GRADIENT PLOT 1/2 
+T_min_sim = min(T_w);
+T_max_sim = max(T_w);
 
-figure(15); clf;
+hRect = patch([T_min_sim T_max_sim T_max_sim T_min_sim], ...
+              [yl(1)      yl(1)      yl(2)      yl(2)], ...
+              'b', 'EdgeColor','none', 'FaceAlpha',0.3, ...
+              'DisplayName','Simulated T-range');
 
-% === Define spatial grid along wire (in mm for clarity) ===
-L_wire = length_wire;          % meters (already defined in script)
-L_mm = L_wire * 1000;          % convert to mm for plotting
-x_mm = linspace(0, L_mm, 51);  % spatial points from 0 to 4 mm
+uistack(hRect,'bottom');               % keep the shade behind lines
 
-% === Select 5 time points to sample profiles ===
-numProfiles = 5;
-idx_sample = round(linspace(1, length(t), numProfiles));
-t_sample = t(idx_sample);
-T_sample = T_a(idx_sample);    % crystal temps at those times
+xlabel('T (K)'); ylabel('\rho (\Omega\cdot m)');
+title('Wire Resistivity vs Temperature');
+legend('Location','best'); grid on;
 
-% === Subplot 1: T(x) profiles at selected times ===
-subplot(2,1,1); hold on;
-for k = 1:numProfiles
-    T_left = T_b;               % bath end
-    T_right = T_sample(k);      % crystal end
-    T_x = T_left + (T_right - T_left) * (x_mm / L_mm);  % linear interp
-    plot(x_mm, T_x, 'LineWidth', 1.6, ...
-         'DisplayName', sprintf('t = %.1f s', t_sample(k)));
-end
-xlabel('Position along wire (mm)');
-ylabel('Temperature (K)');
-title('Wire Temperature Profile at Selected Times');
-legend('Location','best');
-grid on; hold off;
+%%
 
-% === Subplot 2: Midpoint vs ends over full time ===
-subplot(2,1,2); hold on;
-T_center = 0.5 * (T_b + T_a);     % midpoint temp (linear assumption)
-Delta_bath = T_center - T_b;     % center - bath (should be positive)
-Delta_crys = T_center - T_a;     % center - crystal (should be negative)
-plot(t, Delta_bath, 'LineWidth', 1.5, 'DisplayName', 'T_{center} - T_b');
-plot(t, Delta_crys, 'LineWidth', 1.5, 'DisplayName', 'T_{center} - T_{crystal}');
-xlabel('Time (s)');
-ylabel('Temperature Difference (K)');
-title('Wire Center vs Ends Over Time');
-legend('Location','best');
-grid on; hold off;

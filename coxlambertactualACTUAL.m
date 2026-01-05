@@ -34,17 +34,17 @@ time = @(x) (x-temp_init)/beta;
 
 figure(2); clf;
 hold on;
-plot(time(new_x_0p4), new_y_0p4, 'o-');
+%plot(time(new_x_0p4), new_y_0p4, 'o-');
 plot(time(new_x_0p8), new_y_0p8, 'o-');
 plot(time(new_x_1p2), new_y_1p2, 'o-');
 plot(time(new_x_1p6), new_y_1p6, 'o-');
-plot(time(new_x_2p0), new_y_2p0, 'o-');
-plot(time(new_x_2p8), new_y_2p8, 'o-');
-plot(time(new_x_4p0), new_y_4p0, 'o-');
-plot(time(new_x_8p0), new_y_8p0, 'o-');
+%plot(time(new_x_2p0), new_y_2p0, 'o-');
+%plot(time(new_x_2p8), new_y_2p8, 'o-');
+%plot(time(new_x_4p0), new_y_4p0, 'o-');
+%plot(time(new_x_8p0), new_y_8p0, 'o-');
 
 set(gca, 'ColorOrder', cmap, 'NextPlot', 'replacechildren');
-legend('0.4', '0.8', '1.2', '1.6', '2.0', '2.8', '4.0', '8.0');
+legend('0.8 * 10^{19}', '1.2 * 10^{19}', '1.6 * 10^{19}');
 xlabel('Time (s)');
 ylabel('Spectrometer Signal');
 title('Desorption Traces, Signal vs Time')
@@ -85,10 +85,12 @@ scatter(normcoverage(:,1), normcoverage(:,2) * scaleFactor, 'b'); % Original dat
 plot(x_interp, y_interp * scaleFactor, 'r', 'LineWidth', 1.5); % Interpolated curve
 hold off;
 
-xlabel('Dosage (molecules/cm^2  * 10^{19})');
+xlabel('Dosage (molecules/cm^2*10^{19})');
 ylabel('Normalized Coverage');
 title('Dosage vs Coverage');
-legend('Original Data', 'Interpolated Original Data', 'Location', 'best');
+%legend('Original Data', 'Interpolated Original Data', 'Location', 'best','FontSize',16);
+set(groot, 'DefaultAxesFontSize', 16)
+xlim([0 6])
 grid on;
 %% Now Arrhenius analysis, getting the areas to the right of each signal. 
 %6/2 - ignore this integration method this sucks now 
@@ -122,9 +124,9 @@ figure(5); clf;
 hold on;
 %legend('0.4', '0.8', '1.2', '1.6', '2.0', '2.8', '4.0', '8.0');
 [max_new_0p4, ~] = max(new_y_0p4);
-plot(new_x_0p4 , new_N_0p4, 'o-', 'Color', cmap(1,:), 'DisplayName', '0.4 Remaining Coverage');
+%plot(new_x_0p4 , new_N_0p4, 'o-', 'Color', cmap(1,:), 'DisplayName', '0.4 Remaining Coverage');
 %plot(new_x_0p8, new_y_0p8 .* (N0_0p8/max_new_0p8));
-plot(new_x_0p4, new_y_0p4 .* (N0_0p4/max_new_y),'Color',cmap(1,:), 'DisplayName','0.4 Normalized Signal');
+%plot(new_x_0p4, new_y_0p4 .* (N0_0p4/max_new_y),'Color',cmap(1,:), 'DisplayName','0.4 Normalized Signal');
 
 %set(gca, 'ColorOrder', cmap, 'NextPlot', 'replacechildren');
 
@@ -144,8 +146,8 @@ figure(5);
 hold on;
 %legend('0.4', '0.8', '1.2', '1.6', '2.0', '2.8', '4.0', '8.0');
 [max_new_0p8, ~] = max(new_y_0p8);
-plot(new_x_0p8 , new_N_0p8, 'o-', 'Color', cmap(2,:),'DisplayName', '0.8 Remaining Coverage');
-plot(new_x_0p8, new_y_0p8 .* (N0_0p8/max_new_y),'Color',cmap(2,:), 'DisplayName','0.8 Normalized Signal');
+%plot(new_x_0p8 , new_N_0p8, 'o-', 'Color', cmap(2,:),'DisplayName', '0.8 Remaining Coverage');
+plot(new_x_0p8, new_y_0p8 .* (N0_0p8/max_new_y),'Color',cmap(1,:), 'DisplayName','0.8 Normalized Signal');
 
 %plot(new_x_0p8, new_y_0p8 .* (N0_0p8/max_new_0p8));
 
@@ -165,14 +167,15 @@ figure(5);
 hold on;
 %legend('0.4', '0.8', '1.2', '1.6', '2.0', '2.8', '4.0', '8.0');
 [max_new_1p2, ~] = max(new_y_1p2);
-plot(new_x_1p2 , new_N_1p2, 'o-', 'Color',cmap(3,:), 'DisplayName','1.2 Remaining Coverage');
-plot(new_x_1p2, new_y_1p2 .* (N0_1p2/max_new_y),'Color', cmap(3,:), 'DisplayName', '1.2 Normalized Signal');
+%plot(new_x_1p2 , new_N_1p2, 'o-', 'Color',cmap(3,:), 'DisplayName','1.2 Remaining Coverage');
+plot(new_x_1p2, new_y_1p2 .* (N0_1p2/max_new_y),'Color', cmap(2,:), 'DisplayName', '1.2 Normalized Signal');
 
 %plot(new_x_1p2, new_y_1p2 .* (N0_1p2/max_new_1p2));
 
 set(gca, 'ColorOrder', cmap, 'NextPlot', 'replacechildren');
 
 hold off;
+
 new_N_1p6 = zeros(1,length(new_x_1p6));
 
 for i = 1:length(new_x_1p6)
@@ -187,8 +190,8 @@ figure(5);
 hold on;
 %legend('0.4', '0.8', '1.2', '1.6', '2.0', '2.8', '4.0', '8.0');
 
-plot(new_x_1p6 , new_N_1p6, 'o-', 'Color', cmap(4,:), 'DisplayName', '1.6 Normalized Converage');
-plot(new_x_1p6, new_y_1p6 .* (N0_1p6/max_new_y),'Color', cmap(4,:), 'DisplayName','1.6 Normalized Signal');
+%plot(new_x_1p6 , new_N_1p6, 'o-', 'Color', cmap(4,:), 'DisplayName', '1.6 Normalized Converage');
+plot(new_x_1p6, new_y_1p6 .* (N0_1p6/max_new_y),'Color', cmap(3,:), 'DisplayName','1.6 Normalized Signal');
 
 set(gca, 'ColorOrder', cmap, 'NextPlot', 'replacechildren');
 
@@ -203,16 +206,19 @@ end
 new_N_2p0 = new_N_2p0 * (N0_2p0 / new_max_2p0); %trapz assumes a spacing of 1, so if the actual spacing is lower the reported area's going to be higher
  %more on that, it makes the maximum for new_N_ (the first value)be equal to the initial coverage, N0_
 
+
+
+
 fprintf('NEW INSTANCE \n')
 figure(5); 
 hold on;
 %legend('0.4', '0.8', '1.2', '1.6', '2.0', '2.8', '4.0', '8.0');
 
-plot(new_x_2p0 , new_N_2p0, 'o-', 'Color', cmap(5,:), 'DisplayName', '2.0 Normalized Coverage');
-plot(new_x_2p0, new_y_2p0 .* (N0_2p0/max_new_y), 'Color', cmap(5,:), 'DisplayName', '2.0 Normalized Signal');
+%plot(new_x_2p0 , new_N_2p0, 'o-', 'Color', cmap(5,:), 'DisplayName', '2.0 Normalized Coverage');
+%plot(new_x_2p0, new_y_2p0 .* (N0_2p0/max_new_y), 'Color', cmap(5,:), 'DisplayName', '2.0 Normalized Signal');
 
 set(gca, 'ColorOrder', cmap, 'NextPlot', 'replacechildren');
-
+%}
 hold off;
 
 
