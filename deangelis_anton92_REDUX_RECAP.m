@@ -305,44 +305,71 @@ legend('Location','best'); grid on; hold off;
 
 
 %% GRADIENT PLOT 1/2 
+ figure(15); clf;
 
-figure(15); clf;
+ % === Define spatial grid along wire (in mm for clarity) ===
+ L_wire = length_wire;            % meters (already defined in script)
+ L_mm = L_wire * 1000;            % convert to mm for plotting
+ x_m  = linspace(0, L_wire, 51);  % spatial grid in meters
+ x_mm = x_m * 1000;               % same grid in mm for the plots
 
-% === Define spatial grid along wire (in mm for clarity) ===
-L_wire = length_wire;          % meters (already defined in script)
-L_mm = L_wire * 1000;          % convert to mm for plotting
-x_mm = linspace(0, L_mm, 51);  % spatial points from 0 to 4 mm
+ % === Select several time points to sample profiles ===
+ % (more contours in the top subplot for a richer time sweep)
+ numProfiles = 10;
+ idx_sample = round(linspace(1, length(t), numProfiles));
+ t_sample = t(idx_sample);
+ T_sample = T_a(idx_sample);                 % crystal temps at those times (right end)
 
-% === Select 5 time points to sample profiles ===
-numProfiles = 5;
-idx_sample = round(linspace(1, length(t), numProfiles));
-t_sample = t(idx_sample);
-T_sample = T_a(idx_sample);    % crystal temps at those times
+ % === Helper: parabolic profile from uniform Joule heating in a rod ===
+ % T(x) = T_b + (T_R - T_b)*(x/L) + (q'''/(2*k))*(L*x - x^2)
+ % where q''' is volumetric heating [W/m^3] and k = conduct_Ta [W/m/K].
+ volume_wire = L_wire * area_wire;              % per wire
+ P_wire_sample = P_joule(idx_sample) / n_wires; % W in a single wire at samples
+ q_vol_sample = P_wire_sample ./ volume_wire;   % W/m^3
 
-% === Subplot 1: T(x) profiles at selected times ===
-subplot(2,1,1); hold on;
-for k = 1:numProfiles
-    T_left = T_b;               % bath end
-    T_right = T_sample(k);      % crystal end
-    T_x = T_left + (T_right - T_left) * (x_mm / L_mm);  % linear interp
-    plot(x_mm, T_x, 'LineWidth', 1.6, ...
-         'DisplayName', sprintf('t = %.1f s', t_sample(k)));
-end
-xlabel('Position along wire (mm)');
-ylabel('Temperature (K)');
-title('Wire Temperature Profile at Selected Times');
-legend('Location','best');
-grid on; hold off;
+ % Precompute the linear and quadratic coefficients for the analytic gradient
+ % dT/dx = (T_R - T_b)/L + (q'''/(2*k))*(L - 2x)
 
-% === Subplot 2: Midpoint vs ends over full time ===
-subplot(2,1,2); hold on;
-T_center = 0.5 * (T_b + T_a);     % midpoint temp (linear assumption)
-Delta_bath = T_center - T_b;     % center - bath (should be positive)
-Delta_crys = T_center - T_a;     % center - crystal (should be negative)
-plot(t, Delta_bath, 'LineWidth', 1.5, 'DisplayName', 'T_{center} - T_b');
-plot(t, Delta_crys, 'LineWidth', 1.5, 'DisplayName', 'T_{center} - T_{crystal}');
-xlabel('Time (s)');
-ylabel('Temperature Difference (K)');
-title('Wire Center vs Ends Over Time');
-legend('Location','best');
-grid on; hold off;
+ % Distinct style helpers so overlapping contours stay visible
+ colors = lines(numProfiles);
+ lineStyles = {'-','--',':','-.'};
+ markers = {'o','s','d','^','v','>','<','p','h','x'};
+ markerStride = max(2, floor(numel(x_mm) / 10));
+
+ % === Subplot 1: T(x) profiles at selected times ===
+ subplot(2,1,1); hold on;
+ for k = 1:numProfiles
+     T_left = T_b;                  % bath end (x = 0)
+     T_right = T_sample(k);         % crystal end (x = L)
+     T_x = T_left ...
+         + (T_right - T_left) * (x_m / L_wire) ...
+         + (q_vol_sample(k) / (2 * conduct_Ta)) .* (L_wire * x_m - x_m.^2);
+     plot(x_mm, T_x, 'LineWidth', 1.6, ...
+          'Color', colors(k,:), 'LineStyle', lineStyles{mod(k-1, numel(lineStyles))+1}, ...
+          'Marker', markers{mod(k-1, numel(markers))+1}, 'MarkerIndices', 1:markerStride:numel(x_mm), ...
+          'DisplayName', sprintf('t = %.1f s', t_sample(k)));
+ end
+ xlabel('Position along wire (mm)');
+ ylabel('Temperature (K)');
+ title('Wire Temperature Profile with Uniform Joule Heating');
+ legend('Location','best');
+ grid on; hold off;
+
+ % === Subplot 2: Spatial gradient dT/dx for the same snapshots ===
+ subplot(2,1,2); hold on;
+ for k = 1:numProfiles
+     T_left = T_b;
+     T_right = T_sample(k);
+     dTdx_analytic = (T_right - T_left) / L_wire ...
+         + (q_vol_sample(k) / (2 * conduct_Ta)) .* (L_wire - 2 * x_m);
+     plot(x_mm, dTdx_analytic, 'LineWidth', 1.6, ...
+          'Color', colors(k,:), 'LineStyle', lineStyles{mod(k-1, numel(lineStyles))+1}, ...
+          'Marker', markers{mod(k-1, numel(markers))+1}, 'MarkerIndices', 1:markerStride:numel(x_mm), ...
+          'DisplayName', sprintf('t = %.1f s', t_sample(k)));
+ end
+ xlabel('Position along wire (mm)');
+ ylabel('dT/dx (K/m)');
+ title('Spatial Temperature Gradient Along Wire (heat flux \propto -k dT/dx)');
+ legend('Location','best');
+ grid on; hold off;
+
