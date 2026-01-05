@@ -64,7 +64,7 @@ SA_wire_total = n_wires * SA_wire_single;  % total radiative area (m^2)
 % ---- Electrical parameters ----
 rho_elec_Ta = 2.2e-7;          % Ω·m (approx @300 K)
 R_single = rho_elec_Ta * length_wire / area_wire;  % Ω, CONSTANT 
-I_max    = 20;                 % A, total available current
+I_max    = 24;                 % A, total available current
 I_max_single = I_max / (n_wires/2);  % current per active span (your convention)
 
 % ---- Nickel crystal properties ----
@@ -81,7 +81,7 @@ dime_thick   = 1.35e-3;         % m  (US dime thickness = 1.35 mm)
 cu_density   = 8.96e3;          % kg/m^3 (copper)
 C_cu         = 24.47;           % J/mol·K (molar Cp of Cu at ~25 °C)
 atomicmass_Cu = 63.546;         % g/mol
-eps_a        = 0.45;            % emissivity (polished copper 0.1 to 0.2; oxidized can be much higher), doesnt affect ramp rate though 
+eps_a        = 0.15;            % emissivity (polished copper 0.1 to 0.2; oxidized can be much higher), doesnt affect ramp rate though 
 
 spotweldscale = 1; %NEW VARIABLE, 12/28
 
@@ -129,6 +129,23 @@ Ta_rho_FUNCT = @(T) ( ( (p(1)*T + p(2)).*T + p(3) ).*T + p(4) ) * scale;
 % Geometry for THIS page's single Ta span
 R_wire_FUNCT = @(T) Ta_rho_FUNCT(T) .* (length_wire ./ area_wire);  % [ohm]
 
+
+
+%% =======================================
+% Conductivity fit 
+% ========
+
+Ta_temp_CONDUCT = Ta_scan_CONDUCT(:,1)';
+Ta_CONDUCT = Ta_scan_CONDUCT(:,2)';
+
+p2 = polyfit(Ta_temp_CONDUCT, Ta_CONDUCT, 2);
+
+
+
+Ta_CONDUCT_FUNCT = @(T) polyval(p2, T);             % watts/ meters K 
+
+conduct_wireFUNCT = @(T) Ta_CONDUCT_FUNCT(T) * (area_wire/length_wire);
+
 %% === ODE with temperature-dependent R and proper radiating area ===
 I = @(t) (t < t_on);                 % 0/1 gate
 I_amp_single = I_max_single;         % amps 
@@ -153,12 +170,12 @@ odefun = @(t,y) [ ...
 odefun = @(t,y) [ ...
     % --- wire node (y1) ---
     ( (I(t) * I_amp_single).^2 .* R_wire_FUNCT(y(1)) ...   % Joule heat, W, R_wire_FUNCT(y(1))
-      -  (conduct_wire*spotweldscale) * (y(1) - y(2)) ...                  % to crystal
-      -  (conduct_wire*spotweldscale) * (y(1) - T_b) ...                   % to bath
+      -  (conduct_wireFUNCT(y(1))*spotweldscale) * (y(1) - y(2)) ...                  % to crystal
+      -  (conduct_wireFUNCT(y(1))*spotweldscale) * (y(1) - T_b) ...                   % to bath
       -  eps_w * sigma * SA_wire_total * ( y(1).^4 - T_env^4 ) ... % radiation (all wires)
     ) / heatcap_wire ; ...
     % --- crystal node (y2) ---
-    ( (conduct_wire * spotweldscale) * (y(1) - y(2)) * n_wires ...           % from all wires
+    ( (conduct_wireFUNCT(y(1)) * spotweldscale) * (y(1) - y(2)) * n_wires ...           % from all wires
       - eps_a * sigma * A_crys * ( y(2).^4 - T_env^4 ) ... % crystal radiative loss
     ) / heatcap_crystal ...
 ];
@@ -238,17 +255,17 @@ grid on;
 
 % Row 2: wire temperature
 nexttile(3);
-plot(t, T_w, 'LineWidth', 1.8);
-xlabel('time (s)'); ylabel('T_{wire} (K)');
+plot(t, T_w - 273, 'LineWidth', 1.8);
+xlabel('time (s)'); ylabel('T_{wire} (C)');
 title('Wire temperature');
 grid on;
 
 % Row 3: crystal temperature
 nexttile(5);
 hold on;
-plot(t, T_a, 'LineWidth', 1.8);
-scatter(timespan_IRL, tempspan_IRL, 'LineWidth', 2);
-xlabel('time (s)'); ylabel('T_{Ni} (K)');
+plot(t, T_a - 273, 'LineWidth', 1.8);
+%scatter(timespan_IRL, tempspan_IRL - 273, 'LineWidth', 2);
+xlabel('time (s)'); ylabel('T_{Ni} (C)');
 title('Crystal temperature');
 hold off;
 grid on;
