@@ -30,8 +30,8 @@ options = optimoptions('fmincon', 'Display', 'iter', ...
                       'Algorithm', 'interior-point');
 
 % Set bounds: [Ea, w, preexponent, T_c] (scaled)
-lb = [140 * 1000, 0, 0.1*10^7, 0] ./ scale_factors;    % Lower bounds
-ub = [180 * 1000 , 100*1000, 10*10^7, inf] ./ scale_factors;     % Upper bounds
+lb = [140* 1000, -100 * 1000, 10^7, 0] ./ scale_factors;    % Lower bounds
+ub = [180 * 1000 , 30 * 1000, 10^16, 9000] ./ scale_factors;     % Upper bounds
 
 [scaled_best_params, fit_error, ~, ~, ~, ~, scaled_hessian] = fmincon(objective, scaled_init_params, [], [], [], [], lb, ub, [], options);
 
