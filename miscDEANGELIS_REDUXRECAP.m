@@ -46,8 +46,8 @@ conduct_Ta      = 57.5;        % W/m·K
 eps_w           = 0.30;        % emissivity (Ta wire)
 
 % ---- Wire geometry ----
-length_wire   = 8e-3;         % m
-diameter_wire = 0.25e-3;        % m
+length_wire   = 6e-2;         % m
+diameter_wire = 0.5e-3;        % m
 area_wire     = pi * (diameter_wire/2)^2;          % m^2 (≈2.83e-7)
 SA_wire_single = pi * diameter_wire * length_wire;  % m^2 (lateral area)
 
@@ -58,13 +58,13 @@ conduct_wire = conduct_Ta * (area_wire / length_wire);         % W/K
 
 
 % ---- Multi-wire setup ----
-n_wires = 6;                   % number of identical wires
+n_wires = 1;                   % number of identical wires
 SA_wire_total = n_wires * SA_wire_single;  % total radiative area (m^2)
 
 % ---- Electrical parameters ----
 rho_elec_Ta = 1.38e-7;          % Ω·m (approx @300 K)
 R_single = rho_elec_Ta * length_wire / area_wire;  % Ω, CONSTANT 
-I_max    = 20;                 % A, total available current
+I_max    = 6;                 % A, total available current
 I_max_single = I_max / (n_wires/2);  % current per active span (your convention)
 
 % ---- Nickel crystal properties ----
