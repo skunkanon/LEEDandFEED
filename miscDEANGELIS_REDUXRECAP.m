@@ -47,7 +47,7 @@ eps_w           = 0.30;        % emissivity (Ta wire)
 
 % ---- Wire geometry ----
 length_wire   = 6e-2;         % m
-diameter_wire = 0.5e-3;        % m
+diameter_wire = 1e-3;        % m
 area_wire     = pi * (diameter_wire/2)^2;          % m^2 (≈2.83e-7)
 SA_wire_single = pi * diameter_wire * length_wire;  % m^2 (lateral area)
 
@@ -58,13 +58,13 @@ conduct_wire = conduct_Ta * (area_wire / length_wire);         % W/K
 
 
 % ---- Multi-wire setup ----
-n_wires = 1;                   % number of identical wires
+n_wires = 2;                   % number of identical wires
 SA_wire_total = n_wires * SA_wire_single;  % total radiative area (m^2)
 
 % ---- Electrical parameters ----
 rho_elec_Ta = 1.38e-7;          % Ω·m (approx @300 K)
 R_single = rho_elec_Ta * length_wire / area_wire;  % Ω, CONSTANT 
-I_max    = 6;                 % A, total available current
+I_max    = 100;                 % A, total available current
 I_max_single = I_max / (n_wires/2);  % current per active span (your convention)
 
 % ---- Nickel crystal properties ----
@@ -103,7 +103,7 @@ atomicmass_Ni = atomicmass_Cu;
 mass_crystal = pi * ni_radius^2 * ni_thick * ni_density; % kg
 heatcap_crystal = C_ni * (mass_crystal * 1000) / atomicmass_Ni; % J/K
 
-heatcap_crystal = 0.235; % HARDCODE FOR DIME, 1/1
+heatcap_crystal = 0.135; % HARDCODE FOR DIME, 1/1
 
 A_crys = 2*pi*ni_radius^2 + 2*pi*ni_radius*ni_thick;     % m^2, total area
 

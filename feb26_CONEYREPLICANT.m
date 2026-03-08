@@ -97,3 +97,5 @@ ylabel('rate r(\theta)');
 xlim([0 1]);
 grid on;
 
+% TO DO - polyani wigner fitting algorithm for figure 3 (get prefactor + Ea
+% right there); 
