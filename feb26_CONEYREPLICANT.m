@@ -99,3 +99,25 @@ grid on;
 
 % TO DO - polyani wigner fitting algorithm for figure 3 (get prefactor + Ea
 % right there); 
+
+
+
+
+%%
+hodl = struct();
+hodl.t1 = [35 95]; hodl.T1 = 200; 
+hodl.t2 = [112 190]; hodl.T2 = 300;
+
+
+
+exp_data = cell(1,1);
+exp_data{1} = {timespan_CONI, ratespan_CONI, 1, ones(size(ratespan_CONI)), hodl};
+
+init1 = [30e3, -20e3, 1e15, 1000];
+init2 = [130e3, -20e3, 1e15, 1000];
+
+des_order = 1; 
+
+[best1, best2, fit_error, hess1, hess2, cov1, cov2, se1, se2] = ...
+    fit_pw_niemant_isothermal_twostep(exp_data, init1, init2, des_order);
+
