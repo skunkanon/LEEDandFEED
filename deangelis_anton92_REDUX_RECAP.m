@@ -108,8 +108,8 @@ A_crys = 2*pi*ni_radius^2 + 2*pi*ni_radius*ni_thick;     % m^2, total area
 
 
 % ---- Timing ----
-t_on  = 1590.0;   % s, heating pulse
-t_end = 1760.0;   % s, total simulation horizon
+t_on  = 30.0;   % s, heating pulse
+t_end = 60.0;   % s, total simulation horizon
 
 
  %=== Resistivity fit → R(T) for the Ta span ===
